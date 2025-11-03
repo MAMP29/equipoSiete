@@ -12,7 +12,7 @@ import com.appmovil.inventorywidget.databinding.FragmentAddProductBinding
 /**
  * Fragment para  añadir un producto
  */
-class addProduct : Fragment() {
+class AddProduct : Fragment() {
 
     // Manejo explicito del biding, para mamenjo contra null
     // https://developer.android.com/topic/libraries/view-binding?hl=es-419#fragments
@@ -36,6 +36,10 @@ class addProduct : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // Inyectamos el texto al toolbar, esto es logica de la GUI, este texto no cambia
+        // según el modelo
+        binding.toolbar.tvToolbarTitle.text = getString(R.string.agregar_producto)
     }
 
     // Limpiando la referencia del binding

@@ -8,10 +8,10 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:background="@color/black"
-        tools:context=".view.fragment.addProduct">
+        tools:context=".view.fragment.AddProduct">
 
-        <!-- TODO: Update blank fragment layout -->
         <include layout="@layout/include_toolbar"
+            android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
