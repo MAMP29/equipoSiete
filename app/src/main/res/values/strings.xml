@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">InventoryWidget</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="codigo_producto">Código producto</string>
+    <string name="agregar_producto">Agregar producto</string>
+    <string name="titulo_generico">Título Generico</string>
+    <string name="guardar">Guardar</string>
 </resources>
