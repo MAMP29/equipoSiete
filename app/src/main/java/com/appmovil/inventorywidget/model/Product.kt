@@ -12,9 +12,12 @@ data class Product(
     @ColumnInfo(name = "codigo_producto")
     val code: Int,
 
+    @ColumnInfo(name = "nombre_producto")
+    val name: String,
+
     @ColumnInfo(name = "precio_producto")
-    val precio: Int,
+    val price: Int,
 
     @ColumnInfo(name = "cantidad_inventario")
-    val cantidad: Int
+    val quantity: Int
 )
