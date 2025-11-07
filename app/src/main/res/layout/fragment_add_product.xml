@@ -8,6 +8,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:background="@color/black"
+        android:fitsSystemWindows="true"
         tools:context=".view.fragment.AddProduct">
 
         <include layout="@layout/include_toolbar"

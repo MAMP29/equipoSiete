@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import com.appmovil.inventorywidget.R
 import com.appmovil.inventorywidget.databinding.FragmentAddProductBinding
 import com.appmovil.inventorywidget.model.Product
@@ -50,6 +51,9 @@ class AddProduct : Fragment() {
         // Inyectamos el texto al toolbar, esto es logica de la GUI, este texto no cambia
         // según el modelo
         binding.toolbar.tvToolbarTitle.text = getString(R.string.agregar_producto)
+        binding.toolbar.toolbarRoot.setNavigationOnClickListener {
+            findNavController().popBackStack()
+        }
         setupListeners()
         observeProducts()
     }
@@ -98,8 +102,7 @@ class AddProduct : Fragment() {
             productViewModel.save(product)
             Toast.makeText(context, "Artículo guardado !!", Toast.LENGTH_SHORT).show()
             clearFields()
-            // TODO: cuando tengamos la pantalla de Home: findNavController().popBackStack()
-            binding.btnSave.isEnabled = false
+            findNavController().popBackStack()
         } catch (e: NumberFormatException) {
             Toast.makeText(
                 requireContext(),
