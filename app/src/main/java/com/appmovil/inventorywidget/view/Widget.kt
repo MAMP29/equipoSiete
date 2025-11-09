@@ -97,13 +97,13 @@ class Widget : AppWidgetProvider() {
 
             if (isBalanceVisible) {
                 views.setTextViewText(R.id.tvBalanceStatus, formattedBalance)
-                views.setImageViewResource(R.id.ibEye, R.drawable.outline_visibility_off_24) // Necesitas un ícono de ojo cerrado
+                views.setImageViewResource(R.id.ibEye, R.drawable.outline_visibility_off_24)
             } else {
                 views.setTextViewText(R.id.tvBalanceStatus, "$ ****")
                 views.setImageViewResource(R.id.ibEye, R.drawable.outline_visibility_24)
             }
 
-            // Alique los cambios con appWidgetManager
+            // Aplica los cambios con appWidgetManager
             appWidgetManager.updateAppWidget(appWidgetId, views)
         }
     }
