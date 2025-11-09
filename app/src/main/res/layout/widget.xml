@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="120dp"
+    android:background="@drawable/bg_inventory_widget"
+    android:padding="16dp">
+
+    <!-- Bloque Izquierdo: Icono y Título -->
+    <ImageView
+        android:id="@+id/ivIcon"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:contentDescription="App Logo"
+        android:src="@drawable/temporal_icon" />
+
+    <TextView
+        android:id="@+id/tvInventoryLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/ivIcon"
+        android:layout_alignStart="@id/ivIcon"
+        android:layout_marginTop="4dp"
+        android:text="Inventory"
+        android:textColor="#e7522e"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <!-- Bloque Superior Derecho: Título y Ojo -->
+    <ImageButton
+        android:id="@+id/ibEye"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:background="@android:color/transparent"
+        android:src="@drawable/outline_visibility_24" />
+
+    <TextView
+        android:id="@+id/tvTitleBalance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toStartOf="@id/ibEye"
+        android:layout_alignTop="@id/ibEye"
+        android:layout_alignBottom="@id/ibEye"
+        android:gravity="center_vertical"
+        android:layout_marginEnd="8dp"
+        android:text="¿Cuánto tengo de inventario?"
+        android:textColor="@android:color/white"
+        android:textStyle="bold" />
+
+    <!-- Bloque Central Derecho: Saldo -->
+    <TextView
+        android:id="@+id/tvBalanceStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/ibEye"
+        android:layout_alignEnd="@id/ibEye"
+        android:layout_marginTop="8dp"
+        android:text="$ ****"
+        android:textColor="@android:color/white"
+        android:textSize="16sp" />
+
+    <!-- Bloque Inferior Derecho: Gestionar y Engranaje -->
+    <ImageButton
+        android:id="@+id/ibManageInventory"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:src="@drawable/baseline_settings_suggest_24"
+        android:background="@android:color/transparent"/>
+
+    <TextView
+        android:id="@+id/tvManageInventoryTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toStartOf="@id/ibManageInventory"
+        android:layout_alignTop="@id/ibManageInventory"
+        android:layout_alignBottom="@id/ibManageInventory"
+        android:gravity="center_vertical"
+        android:layout_marginEnd="8dp"
+        android:text="Gestionar inventario"
+        android:textColor="@android:color/white"
+        android:textSize="16sp" />
+
+</RelativeLayout>

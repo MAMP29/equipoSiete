@@ -20,6 +20,9 @@ interface ProductDao {
     @Query("SELECT * FROM tabla_productos")
     fun getProductList(): LiveData<List<Product>>
 
+    @Query("SELECT * FROM tabla_productos")
+    suspend fun getProductListDirectly(): List<Product>
+
     @Delete
     suspend fun deleteProduct(product: Product)
 

@@ -15,6 +15,10 @@ class ProductRepository @Inject constructor(
 
     val allProducts: LiveData<List<Product>> = productDao.getProductList()
 
+    suspend fun getProductListDirectly(): List<Product> {
+        return productDao.getProductListDirectly()
+    }
+
     suspend fun save(product: Product) {
         productDao.saveProduct(product)
     }
