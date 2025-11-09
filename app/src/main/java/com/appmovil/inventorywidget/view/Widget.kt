@@ -89,7 +89,7 @@ class Widget : AppWidgetProvider() {
                 totalBalance += product.price * product.quantity
             }
 
-            val formatter = DecimalFormat("$ #,##0.00")
+            val formatter = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("es-CO"))
             val formattedBalance = formatter.format(totalBalance)
 
             // Verificando el estado de visibilidad
