@@ -7,4 +7,5 @@
     <string name="titulo_generico">Título Generico</string>
     <string name="guardar">Guardar</string>
     <string name="tituloInventario">Inventario</string>
+    <string name="widget_description">Check your inventory balance easily</string>
 </resources>
