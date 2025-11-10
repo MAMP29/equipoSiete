@@ -7,7 +7,8 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.appmovil.inventorywidget.databinding.ItemInventoryBinding
 import com.appmovil.inventorywidget.model.Product
-import java.text.DecimalFormat
+import java.text.NumberFormat
+import java.util.Locale
 
 class ProductAdapter : ListAdapter<Product, ProductAdapter.ProductViewHolder>(DiffCallback()) {
 
@@ -25,10 +26,10 @@ class ProductAdapter : ListAdapter<Product, ProductAdapter.ProductViewHolder>(Di
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(product: Product) {
-            val formatter = DecimalFormat("$ #,##0.00")
+            val formatter = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("es-CO"))
             binding.tvName.text = product.name
             binding.tvPrice.text = formatter.format(product.price)
-            binding.tvQuantity.text = "ID: ${product.id.toString()}"
+            binding.tvQuantity.text = "Id: ${product.code.toString()}"
         }
     }
 

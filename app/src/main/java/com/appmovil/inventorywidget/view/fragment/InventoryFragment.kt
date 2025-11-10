@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.appmovil.inventorywidget.R
 import com.appmovil.inventorywidget.databinding.FragmentInventoryBinding
 import com.appmovil.inventorywidget.view.adapter.ProductAdapter
+import com.appmovil.inventorywidget.viewmodel.ProductUiState
 import com.appmovil.inventorywidget.viewmodel.ProductViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -51,8 +52,22 @@ class InventoryFragment : Fragment() {
     }
 
     private fun observeViewModel() {
-        productViewModel.allProducts.observe(viewLifecycleOwner) { products ->
-            products?.let { productAdapter.submitList(it) }
+        productViewModel.productsUiState.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is ProductUiState.Loading -> {
+                    // Estado de Carga
+                    binding.progress.visibility = View.VISIBLE
+                    binding.recyclerview.visibility = View.GONE
+                }
+                is ProductUiState.Success -> {
+                    // Estado de Éxito
+                    binding.progress.visibility = View.GONE
+                    binding.recyclerview.visibility = View.VISIBLE
+
+                    // Envía la lista de productos al adaptador
+                    productAdapter.submitList(state.products)
+                }
+            }
         }
     }
 

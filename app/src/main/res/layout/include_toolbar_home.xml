@@ -23,9 +23,9 @@
             android:textColor="@android:color/white"
             android:contentDescription="Logout"
             android:backgroundTint="@color/gray"
-            app:icon="@drawable/ic_logout"
+            app:icon="@drawable/outline_logout_24"
             android:layout_gravity="end"
-            android:layout_marginEnd="6dp"
+            app:iconGravity="textEnd"
             app:iconSize="32dp"/>
 
     </androidx.appcompat.widget.Toolbar>
