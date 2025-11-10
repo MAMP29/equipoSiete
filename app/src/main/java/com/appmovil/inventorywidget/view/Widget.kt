@@ -14,7 +14,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import java.text.DecimalFormat
 import java.text.NumberFormat
 import java.util.Locale
 import javax.inject.Inject

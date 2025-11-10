@@ -1,6 +1,7 @@
 package com.appmovil.inventorywidget.viewmodel
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
@@ -15,12 +16,26 @@ class ProductViewModel @Inject constructor(
     private val repository: ProductRepository
 ) : ViewModel() {
 
+    // Fuente del estado de la UI
+    private val _productsUiState = MediatorLiveData<ProductUiState>()
+
+    val productsUiState: LiveData<ProductUiState> = _productsUiState
+
+    val allProducts: LiveData<List<Product>> = repository.allProducts
+
+    init {
+        _productsUiState.value = ProductUiState.Loading // Emitir estado de carga
+
+        // Cuando tengamos todos los productos emitimos el estado de exito
+        _productsUiState.addSource(allProducts) { products ->
+            _productsUiState.value = ProductUiState.Success(products)
+        }
+    }
+
     fun getProductById(id: Int): LiveData<Product?> = liveData {
         val product = repository.getById(id)
         emit(product)
     }
-
-    val allProducts: LiveData<List<Product>> = repository.allProducts
 
     fun save(product: Product) = viewModelScope.launch {
         repository.save(product)
