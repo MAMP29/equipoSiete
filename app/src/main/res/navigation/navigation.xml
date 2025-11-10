@@ -30,6 +30,12 @@
         <action
             android:id="@+id/action_inventoryFragment_to_detailProductFragment"
             app:destination="@id/detailProductFragment" />
+
+        <action
+            android:id="@+id/action_inventoryFragment_to_loginFragment"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/navigation"
+            app:popUpToInclusive="true" />
     </fragment>
 
 

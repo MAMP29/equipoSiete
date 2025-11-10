@@ -5,7 +5,7 @@
     android:initialLayout="@layout/widget"
     android:minWidth="340dp"
     android:minHeight="120dp"
-    android:previewImage="@drawable/temporal_icon"
+    android:previewImage="@drawable/app_icon"
     android:previewLayout="@layout/widget"
     android:resizeMode="horizontal|vertical"
     android:targetCellWidth="2"

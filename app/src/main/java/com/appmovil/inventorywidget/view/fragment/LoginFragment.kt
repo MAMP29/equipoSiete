@@ -11,10 +11,16 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.airbnb.lottie.LottieAnimationView
 import com.appmovil.inventorywidget.R
+import com.appmovil.inventorywidget.utils.SessionManager
+import dagger.hilt.android.AndroidEntryPoint
 import java.util.concurrent.Executor
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class LoginFragment : Fragment() {
 
+    @Inject
+    lateinit var sessionManager: SessionManager
     private lateinit var executor: Executor
     private lateinit var biometricPrompt: BiometricPrompt
     private lateinit var promptInfo: BiometricPrompt.PromptInfo
@@ -36,7 +42,11 @@ class LoginFragment : Fragment() {
 
                 override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
                     super.onAuthenticationSucceeded(result)
+
+                    sessionManager.saveSession(true) // Guarda la sesión al autenticarse
+
                     Toast.makeText(requireContext(), "Autenticación exitosa ✅", Toast.LENGTH_SHORT).show()
+
                     // Navegar al fragmento principal de inventario
                     findNavController().navigate(R.id.action_loginFragment_to_inventoryFragment)
                 }
