@@ -75,4 +75,10 @@ dependencies {
     // Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
+
+    // Lotti
+    implementation("com.airbnb.android:lottie:6.4.0")
+
+    // Biometric
+    implementation("androidx.biometric:biometric:1.2.0-alpha05")
 }
