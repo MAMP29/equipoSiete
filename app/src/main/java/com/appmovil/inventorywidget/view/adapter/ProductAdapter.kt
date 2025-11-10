@@ -9,10 +9,16 @@ import com.appmovil.inventorywidget.databinding.ItemInventoryBinding
 import com.appmovil.inventorywidget.model.Product
 import java.text.DecimalFormat
 
-class ProductAdapter : ListAdapter<Product, ProductAdapter.ProductViewHolder>(DiffCallback()) {
+class ProductAdapter(
+    private val onItemClick: (Product) -> Unit   // 👈 nuevo parámetro
+) : ListAdapter<Product, ProductAdapter.ProductViewHolder>(DiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProductViewHolder {
-        val binding = ItemInventoryBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        val binding = ItemInventoryBinding.inflate(
+            LayoutInflater.from(parent.context),
+            parent,
+            false
+        )
         return ProductViewHolder(binding)
     }
 
@@ -28,7 +34,12 @@ class ProductAdapter : ListAdapter<Product, ProductAdapter.ProductViewHolder>(Di
             val formatter = DecimalFormat("$ #,##0.00")
             binding.tvName.text = product.name
             binding.tvPrice.text = formatter.format(product.price)
-            binding.tvQuantity.text = "ID: ${product.id.toString()}"
+            binding.tvQuantity.text = "ID: ${product.id}"
+
+            // 👇 Al hacer clic, llama al callback que definimos en InventoryFragment
+            binding.root.setOnClickListener {
+                onItemClick(product)
+            }
         }
     }
 

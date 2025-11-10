@@ -43,12 +43,18 @@ class InventoryFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        productAdapter = ProductAdapter()
+        productAdapter = ProductAdapter { selectedProduct ->
+            val action = InventoryFragmentDirections
+                .actionInventoryFragmentToDetailProductFragment(selectedProduct)
+            findNavController().navigate(action)
+        }
+
         binding.recyclerview.apply {
             adapter = productAdapter
             layoutManager = LinearLayoutManager(context)
         }
     }
+
 
     private fun observeViewModel() {
         productViewModel.allProducts.observe(viewLifecycleOwner) { products ->

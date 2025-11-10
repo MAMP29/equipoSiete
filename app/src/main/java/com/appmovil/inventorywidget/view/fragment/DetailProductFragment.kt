@@ -30,6 +30,11 @@ class DetailProductFragment : Fragment() {
     ): View {
         _binding = FragmentDetailProductBinding.inflate(inflater, container, false)
 
+        // 🔹 Configura el botón de retroceso del Toolbar
+        binding.toolbar.setNavigationOnClickListener {
+            findNavController().navigateUp()
+        }
+
         val product = args.product
         setupUI(product)
 
@@ -48,19 +53,22 @@ class DetailProductFragment : Fragment() {
 
         binding.fabEdit.setOnClickListener {
             val action = DetailProductFragmentDirections
-                .actionDetailProductFragmentToAddProduct(product)
+                .actionDetailProductFragmentToAddProductFragment(product)
             findNavController().navigate(action)
         }
 
         return binding.root
     }
 
+
     private fun setupUI(product: Product) {
         binding.apply {
             txtName.text = product.name
-            txtPrice.text = "Precio: $${product.price}"
-            txtQuantity.text = "Cantidad: ${product.quantity}"
-            txtTotal.text = "Total: $${"%.2f".format(product.price * product.quantity)}"
+            txtPrice.text = "$${product.price}"
+            txtQuantity.text = "${product.quantity}"
+
+            val total = product.price * product.quantity
+            txtTotal.text = "$${total}"
         }
     }
 
