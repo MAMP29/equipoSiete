@@ -6,15 +6,10 @@
     android:background="#2B2B2B">
 
     <!-- Toolbar -->
-    <com.google.android.material.appbar.MaterialToolbar
+    <include layout="@layout/include_toolbar"
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="#424242"
-        app:title="Detalle del producto"
-        app:titleTextColor="@android:color/white"
-        app:navigationIcon="@drawable/outline_arrow_back_ios_new_24"
-        app:navigationIconTint="@android:color/white"/>
+        android:layout_height="wrap_content" />
 
     <!-- Tarjeta del producto -->
     <androidx.cardview.widget.CardView
