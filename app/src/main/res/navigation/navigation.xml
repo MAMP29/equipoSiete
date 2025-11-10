@@ -3,22 +3,71 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/navigation"
-    app:startDestination="@id/inventoryFragment">
+    app:startDestination="@id/loginFragment">
 
+    <!-- Login -->
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.appmovil.inventorywidget.view.fragment.LoginFragment"
+        android:label="fragment_login"
+        tools:layout="@layout/fragment_login">
+        <action
+            android:id="@+id/action_loginFragment_to_inventoryFragment"
+            app:destination="@id/inventoryFragment" />
+    </fragment>
+
+    <!-- Inventario principal -->
     <fragment
         android:id="@+id/inventoryFragment"
         android:name="com.appmovil.inventorywidget.view.fragment.InventoryFragment"
         android:label="fragment_inventory"
         tools:layout="@layout/fragment_inventory">
+
         <action
             android:id="@+id/action_inventoryFragment_to_addProductFragment"
             app:destination="@id/addProductFragment" />
+
+        <action
+            android:id="@+id/action_inventoryFragment_to_detailProductFragment"
+            app:destination="@id/detailProductFragment" />
     </fragment>
 
+
+    <!-- Agregar producto -->
     <fragment
         android:id="@+id/addProductFragment"
         android:name="com.appmovil.inventorywidget.view.fragment.AddProduct"
         android:label="fragment_add_product"
-        tools:layout="@layout/fragment_add_product" />
-    <!-- TODO: AÑADIR ACTIONS CUANDO SE TENGA EL RESTO DE PANELES, AL HOME AL RETROCEDER Y GUARDAR -->
+        tools:layout="@layout/fragment_add_product">
+
+        <argument
+            android:name="product"
+            app:argType="com.appmovil.inventorywidget.model.Product"
+            app:nullable="true" />
+    </fragment>
+
+    <!-- Ver producto -->
+    <fragment
+        android:id="@+id/detailProductFragment"
+        android:name="com.appmovil.inventorywidget.view.fragment.DetailProductFragment"
+        android:label="Detalle del producto"
+        tools:layout="@layout/fragment_detail_product">
+
+        <!-- Argumento que recibirá el fragmento -->
+        <argument
+            android:name="product"
+            app:argType="com.appmovil.inventorywidget.model.Product" />
+
+        <action
+            android:id="@+id/action_detailProductFragment_to_inventoryFragment"
+            app:destination="@id/inventoryFragment" />
+
+        <action
+            android:id="@+id/action_detailProductFragment_to_addProductFragment"
+            app:destination="@id/addProductFragment" />
+    </fragment>
+
+
+
+
 </navigation>
