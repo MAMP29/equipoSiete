@@ -1,9 +1,12 @@
 package com.appmovil.inventorywidget.model
 
+import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import kotlinx.parcelize.Parcelize
 
+@Parcelize
 @Entity(tableName = "tabla_productos")
 data class Product(
     @PrimaryKey(autoGenerate = true)
@@ -20,4 +23,4 @@ data class Product(
 
     @ColumnInfo(name = "cantidad_inventario")
     val quantity: Int
-)
+) : Parcelable
