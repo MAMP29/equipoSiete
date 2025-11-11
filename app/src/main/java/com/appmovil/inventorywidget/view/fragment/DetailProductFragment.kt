@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.appmovil.inventorywidget.R
@@ -47,7 +48,7 @@ class DetailProductFragment : Fragment() {
                 .setPositiveButton("Sí") { _, _ ->
                     viewModel.delete(product)
                     Toast.makeText(requireContext(), "Producto eliminado ✅", Toast.LENGTH_SHORT).show()
-                    findNavController().navigate(R.id.action_detailProductFragment_to_inventoryFragment)
+                    findNavController().navigate(R.id.action_global_inventoryFragment)
                 }
                 .setNegativeButton("No", null)
                 .show()

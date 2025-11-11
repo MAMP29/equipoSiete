@@ -41,8 +41,14 @@ class ProductViewModel @Inject constructor(
         repository.save(product)
     }
 
-    fun delete(product: Product) = viewModelScope.launch {
-        repository.delete(product)
+    fun delete(product: Product) {
+
+        // Emitimos estado de carga al eliminar un producto
+        _productsUiState.value = ProductUiState.Loading
+
+        viewModelScope.launch {
+            repository.delete(product)
+        }
     }
 
     fun update(product: Product) = viewModelScope.launch {

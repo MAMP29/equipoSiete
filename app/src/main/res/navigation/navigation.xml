@@ -13,7 +13,10 @@
         tools:layout="@layout/fragment_login">
         <action
             android:id="@+id/action_loginFragment_to_inventoryFragment"
-            app:destination="@id/inventoryFragment" />
+            app:destination="@id/inventoryFragment"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true"/>
+
     </fragment>
 
     <!-- Inventario principal -->
@@ -73,7 +76,9 @@
             app:destination="@id/addProductFragment" />
     </fragment>
 
-
-
-
+    <action
+        android:id="@+id/action_global_inventoryFragment"
+        app:destination="@id/inventoryFragment"
+        app:popUpTo="@id/navigation"
+        app:popUpToInclusive="true" />
 </navigation>
