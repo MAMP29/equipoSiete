@@ -6,7 +6,7 @@
     android:orientation="vertical"
     android:gravity="center_horizontal"
     android:background="#1B1B1B">
-
+zp
     <ImageView
         android:id="@+id/inventoryImage"
         android:layout_width="160dp"

@@ -10,13 +10,18 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.appmovil.inventorywidget.R
 import com.appmovil.inventorywidget.databinding.FragmentInventoryBinding
+import com.appmovil.inventorywidget.utils.SessionManager
 import com.appmovil.inventorywidget.view.adapter.ProductAdapter
 import com.appmovil.inventorywidget.viewmodel.ProductUiState
 import com.appmovil.inventorywidget.viewmodel.ProductViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class InventoryFragment : Fragment() {
+
+    @Inject
+    lateinit var sessionManager: SessionManager
 
     private var _binding: FragmentInventoryBinding? = null
     private val binding get() = _binding!!
@@ -37,6 +42,11 @@ class InventoryFragment : Fragment() {
 
         setupRecyclerView()
         observeViewModel()
+
+        binding.toolbarHome.ivLogout.setOnClickListener {
+            sessionManager.logout()
+            findNavController().navigate(R.id.action_inventoryFragment_to_loginFragment)
+        }
 
         binding.fbagregar.setOnClickListener {
             findNavController().navigate(R.id.action_inventoryFragment_to_addProductFragment)

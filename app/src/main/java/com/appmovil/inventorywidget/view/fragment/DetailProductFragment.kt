@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.appmovil.inventorywidget.R
@@ -15,6 +16,8 @@ import com.appmovil.inventorywidget.databinding.FragmentDetailProductBinding
 import com.appmovil.inventorywidget.model.Product
 import com.appmovil.inventorywidget.viewmodel.ProductViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import java.text.NumberFormat
+import java.util.Locale
 
 @AndroidEntryPoint
 class DetailProductFragment : Fragment() {
@@ -30,11 +33,11 @@ class DetailProductFragment : Fragment() {
     ): View {
         _binding = FragmentDetailProductBinding.inflate(inflater, container, false)
 
-        // 🔹 Configura el botón de retroceso del Toolbar
-        binding.toolbar.setNavigationOnClickListener {
+        // Configura el botón de retroceso del Toolbar
+        binding.toolbar.tvToolbarTitle.text = getString(R.string.detalle_producto)
+        binding.toolbar.toolbarRoot.setNavigationOnClickListener {
             findNavController().navigateUp()
         }
-
         val product = args.product
         setupUI(product)
 
@@ -45,7 +48,7 @@ class DetailProductFragment : Fragment() {
                 .setPositiveButton("Sí") { _, _ ->
                     viewModel.delete(product)
                     Toast.makeText(requireContext(), "Producto eliminado ✅", Toast.LENGTH_SHORT).show()
-                    findNavController().navigate(R.id.action_detailProductFragment_to_inventoryFragment)
+                    findNavController().navigate(R.id.action_global_inventoryFragment)
                 }
                 .setNegativeButton("No", null)
                 .show()
@@ -62,13 +65,14 @@ class DetailProductFragment : Fragment() {
 
 
     private fun setupUI(product: Product) {
+        val formatter = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("es-CO"))
         binding.apply {
             txtName.text = product.name
-            txtPrice.text = "$${product.price}"
+            txtPrice.text = formatter.format(product.price)
             txtQuantity.text = "${product.quantity}"
 
             val total = product.price * product.quantity
-            txtTotal.text = "$${total}"
+            txtTotal.text = formatter.format(total)
         }
     }
 
