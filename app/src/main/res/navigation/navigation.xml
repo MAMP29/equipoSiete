@@ -72,8 +72,24 @@
             app:destination="@id/inventoryFragment" />
 
         <action
-            android:id="@+id/action_detailProductFragment_to_addProductFragment"
-            app:destination="@id/addProductFragment" />
+            android:id="@+id/action_detailProductFragment_to_editProductFragment"
+            app:destination="@id/editProductFragment" />
+    
+    </fragment>
+
+        <fragment
+        android:id="@+id/editProductFragment"
+        android:name="com.appmovil.inventorywidget.view.fragment.EditProductFragment"
+        android:label="Editar producto"
+        tools:layout="@layout/fragment_edit_product">
+
+        <argument
+            android:name="product"
+            app:argType="com.appmovil.inventorywidget.model.Product" />
+
+        <action
+            android:id="@+id/action_editProductFragment_to_inventoryFragment"
+            app:destination="@id/inventoryFragment" />
     </fragment>
 
     <action
