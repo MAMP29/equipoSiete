@@ -56,7 +56,7 @@ class DetailProductFragment : Fragment() {
 
         binding.fabEdit.setOnClickListener {
             val action = DetailProductFragmentDirections
-                .actionDetailProductFragmentToAddProductFragment(product)
+               .actionDetailProductFragmentToEditProductFragment(product)
             findNavController().navigate(action)
         }
 

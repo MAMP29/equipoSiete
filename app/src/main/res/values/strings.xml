@@ -5,8 +5,13 @@
     <string name="codigo_producto">Código producto</string>
     <string name="agregar_producto">Agregar producto</string>
     <string name="detalle_producto">Detalle del producto</string>
+    <string name="editar_producto">Editar Producto</string>
     <string name="titulo_generico">Título Generico</string>
     <string name="guardar">Guardar</string>
     <string name="tituloInventario">Inventario</string>
     <string name="widget_description">Check your inventory balance easily</string>
+    <string name="editar">Editar</string>
+    <string name="zapatos">Zapatos</string>
+    <string name="id_producto">Id: %1$s</string>
+    <string name="id_12">Id: 12</string>
 </resources>
