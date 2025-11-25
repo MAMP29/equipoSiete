@@ -1,0 +1,166 @@
+package com.appmovil.inventorywidget
+
+import com.appmovil.inventorywidget.model.AuthResult
+import com.appmovil.inventorywidget.repository.AuthRepository
+import com.appmovil.inventorywidget.viewmodel.AuthState
+import com.appmovil.inventorywidget.viewmodel.AuthViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
+import org.junit.Assert.*
+import org.mockito.Mockito
+
+@OptIn(ExperimentalCoroutinesApi::class)
+class AuthViewModelTest {
+
+    private lateinit var authRepository: AuthRepository
+    private lateinit var authViewModel: AuthViewModel
+
+    private val testDispatcher = UnconfinedTestDispatcher()
+
+    @Before
+    fun setup() {
+        Dispatchers.setMain(testDispatcher)
+        authRepository = Mockito.mock(AuthRepository::class.java)
+        authViewModel = AuthViewModel(authRepository)
+    }
+
+    @After
+    fun tearDown() {
+        Dispatchers.resetMain()
+    }
+
+    @Test
+    fun loginUser_updateStateFlowToLoading_assertEmitSuccess() = runTest {
+        val email = "test@test.com"
+        val password = "123456"
+
+        // Simulamos una respuesta de exito
+        Mockito.`when`(authRepository.login(email, password))
+            .thenReturn(AuthResult(isSuccess = true))
+
+        // Verificando estado inicial
+        assertTrue(authViewModel.authState.value is AuthState.Idle)
+
+        authViewModel.login(email, password)
+
+        val currentState = authViewModel.authState.value
+
+        assertTrue(currentState is AuthState.Success)
+
+        // Verificamos que se llamó al repositorio
+        Mockito.verify(authRepository).login(email, password)
+    }
+
+    @Test
+    fun loginUserFail_updatesStateFlowToError_assertFailure() = runTest {
+        val email = "error@example.com"
+        val password = "bad"
+        val errorMsg = "Usuario no encontrado"
+
+        Mockito.`when`(authRepository.login(email, password))
+            .thenReturn(AuthResult(isSuccess = false, message = errorMsg))
+
+        authViewModel.login(email, password)
+
+        val currentState = authViewModel.authState.value
+
+        // Verificamos tipo de error y mensaje
+        assertTrue(currentState is AuthState.Error)
+        assertEquals(errorMsg, (currentState as AuthState.Error).message)
+    }
+
+    @Test
+    fun loginUser_thenLogout_thenCheckAuthStateToIdle_assertIdle() = runTest {
+        val email = "test@test.com"
+        val password = "123456"
+
+        Mockito.`when`(authRepository.login(email, password))
+            .thenReturn(AuthResult(isSuccess = true))
+
+        Mockito.doNothing().`when`(authRepository).logout()
+
+        authViewModel.login(email, password)
+        authViewModel.logout()
+
+        val currentState = authViewModel.authState.value
+
+        assertTrue(currentState is AuthState.Idle)
+        Mockito.verify(authRepository).logout()
+    }
+
+    @Test
+    fun registerUser_thenFail_thenAssertAuthError() = runTest {
+        val email = "testr@example.com"
+        val password = "contra"
+        val errorMsg = "Contraseña no valida"
+
+        Mockito.`when`(authRepository.register(email, password))
+            .thenReturn(AuthResult(isSuccess = false, message = errorMsg))
+
+        authViewModel.register(email, password)
+
+        val currentState = authViewModel.authState.value
+
+        // Verificamos tipo de error y mensaje
+        assertTrue(currentState is AuthState.Error)
+        assertEquals(errorMsg, (currentState as AuthState.Error).message)
+    }
+
+    @Test
+    fun registerUser_thenAssertIfLoginWasCalled() = runTest {
+        val email = "test@test.com"
+        val password = "123456"
+
+        Mockito.`when`(authRepository.register(email, password))
+            .thenReturn(AuthResult(isSuccess = true))
+
+        Mockito.`when`(authRepository.login(email, password))
+            .thenReturn(AuthResult(isSuccess = true))
+
+        // Verificando estado inicial
+        assertTrue(authViewModel.authState.value is AuthState.Idle)
+
+        authViewModel.register(email, password)
+
+        val currentState = authViewModel.authState.value
+
+        assertTrue(currentState is AuthState.Success)
+
+        // Verificamos que se llamó el login en el repositorio
+        Mockito.verify(authRepository).login(email, password)
+    }
+
+    @Test
+    fun registerSuccess_loginFails_shouldEndWithErrorState() = runTest {
+        val email = "test@test.com"
+        val password = "123456"
+        val loginErrorMessage = "Credenciales de sesión no válidas después del registro."
+
+        // Configura el registro para que simule ser exitoso
+        Mockito.`when`(authRepository.register(email, password))
+            .thenReturn(AuthResult(isSuccess = true, message = null))
+
+        // Configura el registro para que simule fallar
+        Mockito.`when`(authRepository.login(email, password))
+            .thenReturn(AuthResult(isSuccess = false, message = loginErrorMessage))
+
+        assertTrue(authViewModel.authState.value is AuthState.Idle)
+
+        authViewModel.register(email, password)
+
+        Mockito.verify(authRepository).login(email, password)
+
+        val currentState = authViewModel.authState.value
+
+        assertTrue(currentState is AuthState.Error)
+
+        assertEquals(loginErrorMessage, (currentState as AuthState.Error).message)
+    }
+}
