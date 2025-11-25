@@ -5,6 +5,8 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.appmovil.inventorywidget.data.InventoryDatabase
 import com.appmovil.inventorywidget.data.ProductDao
+import com.appmovil.inventorywidget.repository.AuthRepository
+import com.appmovil.inventorywidget.repository.AuthRepositoryImp
 import com.google.firebase.auth.FirebaseAuth
 import dagger.Module
 import dagger.Provides
@@ -31,6 +33,12 @@ class AppModule {
     @Singleton
     fun provideProductDao(db: InventoryDatabase): ProductDao {
         return db.productDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideAuthRepository(auth: FirebaseAuth): AuthRepository {
+        return AuthRepositoryImp(auth)
     }
 
     @Provides
