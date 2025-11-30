@@ -31,14 +31,11 @@ class AuthRepositoryImp @Inject constructor(
                     .addOnSuccessListener {
                         Log.i(tag, "Registro exitoso")
 
-                        // TODO: Guardar el usuario en el repositorio, viewmodel imp
-                        // TODO: Encargar login al viewModel y el guardado
-                        continuation.resume(AuthResult(
-                            isSuccess = true
-                        ))
-                        /*CoroutineScope(Dispatchers.IO).launch {
-                            continuation.resume(login(email, password))
-                        }*/
+                        continuation.resume(
+                            AuthResult(
+                                isSuccess = true
+                            )
+                        )
                     }
 
                     .addOnFailureListener {
@@ -50,7 +47,6 @@ class AuthRepositoryImp @Inject constructor(
                             )
                         )
                     }
-
             }
             return result
 
@@ -59,11 +55,12 @@ class AuthRepositoryImp @Inject constructor(
             if (e is CancellationException) throw e
             Log.e(tag, "Excepcion en el registro ${e.message}")
             return AuthResult(
-                isSuccess = true,
+                isSuccess = false,   // 👈 FIX IMPORTANTE
                 message = e.toString()
             )
         }
     }
+
 
     override suspend fun login(email: String, password: String): AuthResult {
         try {

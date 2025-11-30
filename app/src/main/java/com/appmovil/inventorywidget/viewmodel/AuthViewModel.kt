@@ -2,7 +2,6 @@ package com.appmovil.inventorywidget.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.appmovil.inventorywidget.model.AuthResult
 import com.appmovil.inventorywidget.repository.AuthRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,42 +14,106 @@ class AuthViewModel @Inject constructor(
     private val authRepository: AuthRepository
 ) : ViewModel() {
 
+    // CAMPOS DE LA UI
+    val email = MutableStateFlow("")
+    val password = MutableStateFlow("")
+    val passwordError = MutableStateFlow(false)
+
+    // VISIBILIDAD DEL PASSWORD
+    val passwordVisible = MutableStateFlow(false)
+
+    // BOTONES
+    val isLoginEnabled = MutableStateFlow(false)
+    val isRegisterEnabled = MutableStateFlow(false)
+
+    // ESTADO DE AUTENTICACIÓN
     private val _authState = MutableStateFlow<AuthState>(AuthState.Idle)
     val authState: StateFlow<AuthState> = _authState
 
 
-    fun register(email: String, password: String) = viewModelScope.launch {
-        _authState.value = AuthState.Loading
-
-        val authResult = authRepository.register(email, password)
-
-        if (authResult.isSuccess) {
-            // TODO: Guardar usuario en la DB
-            _authState.value = AuthState.Success
-            login(email, password)
-        } else {
-            _authState.value = AuthState.Error(authResult.message?.toString() ?: "Error")
+    // -----------------------------------------------------
+    // MANEJO DE CAMPOS
+    // -----------------------------------------------------
+    fun onEmailChange(text: String) {
+        if (text.length <= 40) {
+            email.value = text
+            validateForm()
         }
     }
 
-    fun login(email: String, password: String) = viewModelScope.launch {
-        _authState.value = AuthState.Loading
+    fun onPasswordChange(text: String) {
+        if (text.all { it.isDigit() } && text.length <= 10) {
 
-        val authResult = authRepository.login(email, password)
+            password.value = text
 
-        if (authResult.isSuccess) {
-            _authState.value = AuthState.Success
-        } else {
-            _authState.value = AuthState.Error(authResult.message?.toString() ?: "Error")
+            // Error cuando entre 1..5 dígitos
+            passwordError.value = text.length in 1..5
+
+            validateForm()
         }
     }
 
-    fun isLoggedIn(): Boolean {
-        return authRepository.isLoggedIn()
+    fun togglePasswordVisibility() {
+        passwordVisible.value = !passwordVisible.value
     }
 
-    fun logout() = viewModelScope.launch {
-        _authState.value = AuthState.Idle
+
+    // -----------------------------------------------------
+    // VALIDACIONES HU 2.0
+    // -----------------------------------------------------
+    fun isPasswordValid(): Boolean {
+        return !passwordError.value
+    }
+
+    fun canLogin(): Boolean {
+        return email.value.isNotBlank() &&
+                password.value.isNotBlank() &&
+                !passwordError.value
+    }
+
+    private fun validateForm() {
+        val valid = canLogin()
+        isLoginEnabled.value = valid
+        isRegisterEnabled.value = valid
+    }
+
+
+    // -----------------------------------------------------
+    // LOGIN Y REGISTRO
+    // -----------------------------------------------------
+    fun login(email: String, pass: String) = viewModelScope.launch {
+        _authState.value = AuthState.Loading
+
+        val result = authRepository.login(email, pass)
+
+        if (result.isSuccess) {
+            _authState.value = AuthState.Success
+        } else {
+            _authState.value = AuthState.Error(result.message ?: "Error en login")
+        }
+    }
+
+    fun register(email: String, pass: String) = viewModelScope.launch {
+        _authState.value = AuthState.Loading
+
+        val result = authRepository.register(email, pass)
+
+        if (result.isSuccess) {
+            _authState.value = AuthState.Success
+            login(email, pass)
+        } else {
+            _authState.value = AuthState.Error(result.message ?: "Error en registro")
+        }
+    }
+
+
+    // -----------------------------------------------------
+    // SESIÓN
+    // -----------------------------------------------------
+    fun isLoggedIn(): Boolean = authRepository.isLoggedIn()
+
+    fun logout() {
         authRepository.logout()
+        _authState.value = AuthState.Idle
     }
 }

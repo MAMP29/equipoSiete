@@ -5,77 +5,117 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
+import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.airbnb.lottie.LottieAnimationView
 import com.appmovil.inventorywidget.R
-import com.appmovil.inventorywidget.utils.SessionManager
+import com.appmovil.inventorywidget.databinding.FragmentLoginBinding
+import com.appmovil.inventorywidget.viewmodel.AuthState
+import com.appmovil.inventorywidget.viewmodel.AuthViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import java.util.concurrent.Executor
-import javax.inject.Inject
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class LoginFragment : Fragment() {
 
-    @Inject
-    lateinit var sessionManager: SessionManager
-    private lateinit var executor: Executor
-    private lateinit var biometricPrompt: BiometricPrompt
-    private lateinit var promptInfo: BiometricPrompt.PromptInfo
+    private lateinit var binding: FragmentLoginBinding
+    private val viewModel: AuthViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        // Inflamos tu layout original (no se toca)
-        val view = inflater.inflate(R.layout.fragment_login, container, false)
+        binding = FragmentLoginBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
-        // Configuración del executor
-        executor = ContextCompat.getMainExecutor(requireContext())
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        // Configuración del prompt biométrico
-        biometricPrompt = BiometricPrompt(this, executor,
-            object : BiometricPrompt.AuthenticationCallback() {
+        setupListeners()
+        observeAuthState()
+    }
 
-                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
-                    super.onAuthenticationSucceeded(result)
+    private fun setupListeners() {
 
-                    sessionManager.saveSession(true) // Guarda la sesión al autenticarse
-
-                    Toast.makeText(requireContext(), "Autenticación exitosa ✅", Toast.LENGTH_SHORT).show()
-
-                    // Navegar al fragmento principal de inventario
-                    findNavController().navigate(R.id.action_loginFragment_to_inventoryFragment)
-                }
-
-                override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
-                    super.onAuthenticationError(errorCode, errString)
-                    Toast.makeText(requireContext(), "Error: $errString", Toast.LENGTH_SHORT).show()
-                }
-
-                override fun onAuthenticationFailed() {
-                    super.onAuthenticationFailed()
-                    Toast.makeText(requireContext(), "Huella no reconocida ❌", Toast.LENGTH_SHORT).show()
-                }
-            })
-
-        // Configuración del mensaje del diálogo
-        promptInfo = BiometricPrompt.PromptInfo.Builder()
-            .setTitle("Autenticación con Biometría")
-            .setSubtitle("Ingrese su huella digital")
-            .setNegativeButtonText("CANCELAR")
-            .build()
-
-        // Listener para tu animación Lottie
-        val fingerprintAnim = view.findViewById<LottieAnimationView>(R.id.fingerprintAnimation)
-        fingerprintAnim.setOnClickListener {
-            Toast.makeText(requireContext(), "Huella tocada 👆", Toast.LENGTH_SHORT).show()
-            biometricPrompt.authenticate(promptInfo)
+        // EMAIL CHANGES
+        binding.edtEmail.doOnTextChanged { text, _, _, _ ->
+            viewModel.onEmailChange(text.toString())
         }
 
-        return view
+        // PASSWORD CHANGES
+        binding.edtPassword.doOnTextChanged { text, _, _, _ ->
+            viewModel.onPasswordChange(text.toString())
+        }
+
+        // LOGIN
+        binding.btnLogin.setOnClickListener {
+            viewModel.login(
+                email = binding.edtEmail.text.toString(),
+                pass = binding.edtPassword.text.toString()
+            )
+        }
+
+        // REGISTRARSE
+        binding.btnGoRegister.setOnClickListener {
+            viewModel.register(
+                email = binding.edtEmail.text.toString(),
+                pass = binding.edtPassword.text.toString()
+            )
+        }
+
+        // OJO DE PASSWORD
+        binding.inputPassword.setStartIconOnClickListener {
+            viewModel.togglePasswordVisibility()
+        }
+    }
+
+    private fun observeAuthState() {
+
+        lifecycleScope.launch {
+            viewModel.authState.collect { state ->
+
+                when (state) {
+                    is AuthState.Loading -> {
+                        binding.btnLogin.isEnabled = false
+                        binding.btnLogin.alpha = 0.4f
+                    }
+
+                    is AuthState.Error -> {
+                        Toast.makeText(requireContext(), state.message, Toast.LENGTH_LONG).show()
+                    }
+
+                    is AuthState.Success -> {
+                        findNavController().navigate(
+                            R.id.action_loginFragment_to_inventoryFragment
+                        )
+                    }
+
+                    else -> Unit
+                }
+
+                // Mostrar u ocultar error de password
+                binding.txtPasswordError.visibility =
+                    if (viewModel.isPasswordValid()) View.GONE else View.VISIBLE
+
+                // Habilitar login
+                val canLogin = viewModel.canLogin()
+                binding.btnLogin.isEnabled = canLogin
+                binding.btnLogin.alpha = if (canLogin) 1f else 0.4f
+
+                // Cambiar el ícono del ojo
+                val icon = if (viewModel.passwordVisible.value)
+                    R.drawable.ic_eye_open
+                else
+                    R.drawable.ic_eye_close
+
+                binding.inputPassword.startIconDrawable =
+                    ContextCompat.getDrawable(requireContext(), icon)
+            }
+        }
     }
 }
