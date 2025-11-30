@@ -6,6 +6,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 @Singleton
@@ -14,32 +15,46 @@ class UserRepositoryImp @Inject constructor(
 ) : UserRepository {
 
 
-    override suspend fun createUser(uid: String, email: String) {
-        val user = User(email = email)
-        db.collection("users").document(uid)
-            .set(user)
-            .addOnSuccessListener { Log.d("UserRepo", "Documento guardado exitosamente") }
-            .addOnFailureListener { e -> Log.w("UserRepo", "Error al guardar el documento", e) }
-    }
+    override suspend fun createUser(uid: String, user: User): Unit =
+        suspendCoroutine { cont ->
+            db.collection("users").document(uid)
+                .set(user)
+                .addOnSuccessListener {
+                    Log.d("UserRepo", "Documento guardado exitosamente")
+                    cont.resume(Unit)
+                }
+                .addOnFailureListener { e ->
+                    Log.w("UserRepo", "Error al guardar el documento", e)
+                    cont.resumeWithException(e)
+                }
+        }
 
-    override suspend fun updateUser(uid: String, email: String) {
-        val user = db.collection("users").document(uid)
-        user.update("email", email)
-            .addOnSuccessListener { Log.d("UserRepo", "Documento actualizado exitosamente") }
-            .addOnFailureListener { e -> Log.w("UserRepo", "Error al actualizar el documento", e) }
-    }
+
+    override suspend fun updateUser(uid: String, user: User): Unit =
+        suspendCoroutine { cont ->
+            db.collection("users").document(uid)
+                .update(
+                    mapOf(
+                        "email" to user.email,
+                    )
+                )
+                .addOnSuccessListener {
+                    Log.d("UserRepo", "Documento actualizado exitosamente")
+                    cont.resume(Unit)
+                }
+                .addOnFailureListener { e ->
+                    Log.w("UserRepo", "Error al actualizar el documento", e)
+                    cont.resumeWithException(e)
+                }
+        }
+
 
     override suspend fun getUserById(uid: String): User? = suspendCoroutine { cont ->
         db.collection("users").document(uid)
             .get()
             .addOnSuccessListener { doc ->
                 if(doc.exists()) {
-                    cont.resume(
-                        User(
-                            id = doc.getString("id").toString(),
-                            email = doc.getString("email").toString()
-                        )
-                    )
+                    cont.resume(doc.toObject(User::class.java))
                 } else {
                     cont.resume(null)
                 }
@@ -48,6 +63,5 @@ class UserRepositoryImp @Inject constructor(
                 Log.w("UserRepo", "Error al guardar el documento", e)
                 cont.resume(null)
             }
-
     }
 }
