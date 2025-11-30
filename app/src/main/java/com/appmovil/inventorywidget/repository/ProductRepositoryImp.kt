@@ -15,7 +15,7 @@ class ProductRepositoryImp @Inject constructor(
     private val sessionManager: SessionManager
 ) : ProductRepository {
 
-    override suspend fun createProduct(product: Product): Unit =
+    override suspend fun saveProduct(product: Product): Unit =
         suspendCoroutine { cont ->
             val uid = sessionManager.currentUser()?.id.toString()
             if (uid == null) {

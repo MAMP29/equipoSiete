@@ -7,6 +7,8 @@ import com.appmovil.inventorywidget.data.InventoryDatabase
 import com.appmovil.inventorywidget.data.ProductDao
 import com.appmovil.inventorywidget.repository.AuthRepository
 import com.appmovil.inventorywidget.repository.AuthRepositoryImp
+import com.appmovil.inventorywidget.repository.UserRepository
+import com.appmovil.inventorywidget.repository.UserRepositoryImp
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -42,6 +44,12 @@ class AppModule {
     @Singleton
     fun provideAuthRepository(auth: FirebaseAuth): AuthRepository {
         return AuthRepositoryImp(auth)
+    }
+
+    @Provides
+    @Singleton
+    fun provideUserRepository(db: FirebaseFirestore): UserRepository {
+        return UserRepositoryImp(db)
     }
 
     @Provides

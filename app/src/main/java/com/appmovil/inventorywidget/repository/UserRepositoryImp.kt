@@ -15,9 +15,9 @@ class UserRepositoryImp @Inject constructor(
 ) : UserRepository {
 
 
-    override suspend fun createUser(uid: String, user: User): Unit =
+    override suspend fun createUser(user: User): Unit =
         suspendCoroutine { cont ->
-            db.collection("users").document(uid)
+            db.collection("users").document(user.id)
                 .set(user)
                 .addOnSuccessListener {
                     Log.d("UserRepo", "Documento guardado exitosamente")
@@ -30,9 +30,9 @@ class UserRepositoryImp @Inject constructor(
         }
 
 
-    override suspend fun updateUser(uid: String, user: User): Unit =
+    override suspend fun updateUser(user: User): Unit =
         suspendCoroutine { cont ->
-            db.collection("users").document(uid)
+            db.collection("users").document(user.id)
                 .update(
                     mapOf(
                         "email" to user.email,

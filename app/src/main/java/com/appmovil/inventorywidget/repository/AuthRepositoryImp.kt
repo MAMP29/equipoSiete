@@ -2,7 +2,6 @@ package com.appmovil.inventorywidget.repository
 
 import android.util.Log
 import com.appmovil.inventorywidget.model.AuthResult
-import com.appmovil.inventorywidget.model.User
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CancellationException
 import javax.inject.Inject
@@ -28,19 +27,16 @@ class AuthRepositoryImp @Inject constructor(
         try {
             val result = suspendCoroutine { continuation ->
                 firebaseAuth.createUserWithEmailAndPassword(email, password)
-                    .addOnSuccessListener {
+                    .addOnSuccessListener { authResult ->
+                        val userId = authResult.user?.uid
                         Log.i(tag, "Registro exitoso")
 
-                        // TODO: Guardar el usuario en el repositorio, viewmodel imp
-                        // TODO: Encargar login al viewModel y el guardado
-                        continuation.resume(AuthResult(
-                            isSuccess = true
-                        ))
-                        /*CoroutineScope(Dispatchers.IO).launch {
-                            continuation.resume(login(email, password))
-                        }*/
+                        if (userId != null) {
+                            continuation.resume(AuthResult(isSuccess = true, userId = userId))
+                        } else {
+                            continuation.resume(AuthResult(isSuccess = false, message = "No se pudo obtener el UID del usuario."))
+                        }
                     }
-
                     .addOnFailureListener {
                         Log.i(tag, "Fallo en el registro ${it.message}")
                         continuation.resume(
@@ -50,7 +46,6 @@ class AuthRepositoryImp @Inject constructor(
                             )
                         )
                     }
-
             }
             return result
 
@@ -69,13 +64,15 @@ class AuthRepositoryImp @Inject constructor(
         try {
             val result = suspendCoroutine { continuation ->
                 firebaseAuth.signInWithEmailAndPassword(email, password)
-                    .addOnSuccessListener {
+                    .addOnSuccessListener { authResult ->
+                        val userId = authResult.user?.uid
                         Log.i(tag, "Inicio de sesión exitoso")
-                        continuation.resume(AuthResult(
-                            isSuccess = true
-                        ))
+                        if (userId != null) {
+                            continuation.resume(AuthResult(isSuccess = true, userId = userId))
+                        } else {
+                            continuation.resume(AuthResult(isSuccess = false, message = "No se pudo obtener el UID del usuario."))
+                        }
                     }
-
                     .addOnFailureListener {
                         Log.i(tag, "Fallo en el inicio de sesión ${it.message}")
                         continuation.resume(
