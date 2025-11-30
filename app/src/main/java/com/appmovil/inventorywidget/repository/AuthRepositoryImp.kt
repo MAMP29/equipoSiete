@@ -100,9 +100,6 @@ class AuthRepositoryImp @Inject constructor(
         }
     }
 
-    override fun currentUser(): User? {
-        return firebaseAuth.currentUser?.let { User(id = it.uid) }
-    }
 
     override fun logout() {
         firebaseAuth.signOut()

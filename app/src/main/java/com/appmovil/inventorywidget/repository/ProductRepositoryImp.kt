@@ -11,11 +11,17 @@ import kotlin.coroutines.suspendCoroutine
 
 @Singleton
 class ProductRepositoryImp @Inject constructor(
-    private val db: FirebaseFirestore
+    private val db: FirebaseFirestore,
+    private val sessionManager: SessionManager
 ) : ProductRepository {
 
-    override suspend fun createProduct(uid: String, product: Product): Unit =
+    override suspend fun createProduct(product: Product): Unit =
         suspendCoroutine { cont ->
+            val uid = sessionManager.currentUser()?.id.toString()
+            if (uid == null) {
+                cont.resumeWithException(Exception("No hay un usuario autenticado para realizar esta operación."))
+                return@suspendCoroutine
+            }
             db.collection("users").document(uid)
                 .collection("products").document(product.id)
                 .set(product)
@@ -30,8 +36,13 @@ class ProductRepositoryImp @Inject constructor(
         }
 
 
-    override suspend fun deleteProduct(uid: String, productId: String): Unit =
+    override suspend fun deleteProduct(productId: String): Unit =
         suspendCoroutine { cont ->
+            val uid = sessionManager.currentUser()?.id.toString()
+            if (uid == null) {
+                cont.resumeWithException(Exception("No hay un usuario autenticado para realizar esta operación."))
+                return@suspendCoroutine
+            }
             db.collection("users").document(uid)
                 .collection("products").document(productId)
                 .delete()
@@ -46,8 +57,13 @@ class ProductRepositoryImp @Inject constructor(
         }
 
 
-    override suspend fun updateProduct(uid: String, product: Product): Unit =
+    override suspend fun updateProduct(product: Product): Unit =
         suspendCoroutine { cont ->
+            val uid = sessionManager.currentUser()?.id.toString()
+            if (uid == null) {
+                cont.resumeWithException(Exception("No hay un usuario autenticado para realizar esta operación."))
+                return@suspendCoroutine
+            }
             db.collection("users")
                 .document(uid)
                 .collection("products")
@@ -70,33 +86,45 @@ class ProductRepositoryImp @Inject constructor(
         }
 
 
-    override suspend fun getProductById(uid: String, productId: String): Product? = suspendCoroutine { cont ->
-        db.collection("users").document(uid)
-            .collection("products").document(productId)
-            .get()
-            .addOnSuccessListener { doc ->
-                if(doc.exists()) {
-                    cont.resume(doc.toObject(Product::class.java))
-                } else {
+    override suspend fun getProductById(productId: String): Product? =
+        suspendCoroutine { cont ->
+            val uid = sessionManager.currentUser()?.id.toString()
+            if (uid == null) {
+                cont.resumeWithException(Exception("No hay un usuario autenticado para realizar esta operación."))
+                return@suspendCoroutine
+            }
+            db.collection("users").document(uid)
+                .collection("products").document(productId)
+                .get()
+                .addOnSuccessListener { doc ->
+                    if(doc.exists()) {
+                        cont.resume(doc.toObject(Product::class.java))
+                    } else {
+                        cont.resume(null)
+                    }
+                }
+                .addOnFailureListener { e ->
+                    Log.w("UserRepo", "Error al guardar el documento", e)
                     cont.resume(null)
                 }
-            }
-            .addOnFailureListener { e ->
-                Log.w("UserRepo", "Error al guardar el documento", e)
-                cont.resume(null)
-            }
-    }
+        }
 
-    override suspend fun getUserProductList(uid: String): List<Product>? = suspendCoroutine { cont ->
-        db.collection("users").document(uid)
-            .collection("products")
-            .get()
-            .addOnSuccessListener { doc ->
-                cont.resume(doc.toObjects(Product::class.java))
+    override suspend fun getUserProductList(): List<Product> =
+        suspendCoroutine { cont ->
+            val uid = sessionManager.currentUser()?.id.toString()
+            if (uid == null) {
+                cont.resumeWithException(Exception("No hay un usuario autenticado para realizar esta operación."))
+                return@suspendCoroutine
             }
-            .addOnFailureListener { e ->
-                Log.w("UserRepo", "Error al guardar el documento", e)
-                cont.resume(emptyList())
-            }
-    }
+            db.collection("users").document(uid)
+                .collection("products")
+                .get()
+                .addOnSuccessListener { doc ->
+                    cont.resume(doc.toObjects(Product::class.java))
+                }
+                .addOnFailureListener { e ->
+                    Log.w("UserRepo", "Error al guardar el documento", e)
+                    cont.resume(emptyList())
+                }
+        }
 }
