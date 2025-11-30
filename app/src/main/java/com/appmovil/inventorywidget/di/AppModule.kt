@@ -7,7 +7,10 @@ import com.appmovil.inventorywidget.data.InventoryDatabase
 import com.appmovil.inventorywidget.data.ProductDao
 import com.appmovil.inventorywidget.repository.AuthRepository
 import com.appmovil.inventorywidget.repository.AuthRepositoryImp
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.firestore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -45,5 +48,11 @@ class AppModule {
     @Singleton
     fun provideFirebaseAuth(): FirebaseAuth {
         return FirebaseAuth.getInstance()
+    }
+
+    @Provides
+    @Singleton
+    fun provideFirebaseDb() : FirebaseFirestore {
+        return Firebase.firestore
     }
 }

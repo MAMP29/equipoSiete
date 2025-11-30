@@ -6,14 +6,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
 import com.appmovil.inventorywidget.model.Product
-import com.appmovil.inventorywidget.repository.ProductRepository
+import com.appmovil.inventorywidget.repository.ProductRepositoryOld
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class ProductViewModel @Inject constructor(
-    private val repository: ProductRepository
+    private val repository: ProductRepositoryOld
 ) : ViewModel() {
 
     // Fuente del estado de la UI

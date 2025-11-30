@@ -8,7 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.widget.RemoteViews
 import com.appmovil.inventorywidget.R
-import com.appmovil.inventorywidget.repository.ProductRepository
+import com.appmovil.inventorywidget.repository.ProductRepositoryOld
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -25,7 +25,7 @@ private const val ACTION_TOGGLE_VISIBILITY = "com.appmovil.inventorywidget.ACTIO
 class Widget : AppWidgetProvider() {
 
     @Inject
-    lateinit var repository: ProductRepository
+    lateinit var repository: ProductRepositoryOld
 
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
