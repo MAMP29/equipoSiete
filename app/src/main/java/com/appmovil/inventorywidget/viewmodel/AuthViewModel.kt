@@ -2,7 +2,9 @@ package com.appmovil.inventorywidget.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.appmovil.inventorywidget.model.User
 import com.appmovil.inventorywidget.repository.AuthRepository
+import com.appmovil.inventorywidget.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -11,107 +13,106 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
-    // CAMPOS DE LA UI
-    val email = MutableStateFlow("")
-    val password = MutableStateFlow("")
-    val passwordError = MutableStateFlow(false)
+    // INPUTS
+    private val _email = MutableStateFlow("")
+    val email: StateFlow<String> = _email
 
-    // VISIBILIDAD DEL PASSWORD
-    val passwordVisible = MutableStateFlow(false)
+    private val _password = MutableStateFlow("")
+    val password: StateFlow<String> = _password
 
-    // BOTONES
-    val isLoginEnabled = MutableStateFlow(false)
-    val isRegisterEnabled = MutableStateFlow(false)
+    // PASSWORD VISIBILITY
+    private val _passwordVisible = MutableStateFlow(false)
+    val passwordVisible: StateFlow<Boolean> = _passwordVisible
 
-    // ESTADO DE AUTENTICACIÓN
+    // FORM VALIDATION
+    private val _isFormValid = MutableStateFlow(false)
+    val isFormValid: StateFlow<Boolean> = _isFormValid
+
+    // AUTH STATE
     private val _authState = MutableStateFlow<AuthState>(AuthState.Idle)
     val authState: StateFlow<AuthState> = _authState
 
 
-    // -----------------------------------------------------
-    // MANEJO DE CAMPOS
-    // -----------------------------------------------------
-    fun onEmailChange(text: String) {
-        if (text.length <= 40) {
-            email.value = text
-            validateForm()
-        }
+    // ---------------------------
+    //     INPUT UPDATES
+    // ---------------------------
+    fun onEmailChange(value: String) {
+        _email.value = value
+        validateForm()
     }
 
-    fun onPasswordChange(text: String) {
-        if (text.all { it.isDigit() } && text.length <= 10) {
-
-            password.value = text
-
-            // Error cuando entre 1..5 dígitos
-            passwordError.value = text.length in 1..5
-
-            validateForm()
-        }
-    }
-
-    fun togglePasswordVisibility() {
-        passwordVisible.value = !passwordVisible.value
-    }
-
-
-    // -----------------------------------------------------
-    // VALIDACIONES HU 2.0
-    // -----------------------------------------------------
-    fun isPasswordValid(): Boolean {
-        return !passwordError.value
-    }
-
-    fun canLogin(): Boolean {
-        return email.value.isNotBlank() &&
-                password.value.isNotBlank() &&
-                !passwordError.value
+    fun onPasswordChange(value: String) {
+        _password.value = value
+        validateForm()
     }
 
     private fun validateForm() {
-        val valid = canLogin()
-        isLoginEnabled.value = valid
-        isRegisterEnabled.value = valid
+        _isFormValid.value =
+            _email.value.isNotBlank() &&
+                    _password.value.length >= 6
     }
 
 
-    // -----------------------------------------------------
-    // LOGIN Y REGISTRO
-    // -----------------------------------------------------
-    fun login(email: String, pass: String) = viewModelScope.launch {
+    // ---------------------------
+    //   PASSWORD VISIBILITY
+    // ---------------------------
+    fun togglePasswordVisibility() {
+        _passwordVisible.value = !_passwordVisible.value
+    }
+
+
+    // ---------------------------
+    //        REGISTER
+    // ---------------------------
+    fun register(email: String, password: String) = viewModelScope.launch {
+
         _authState.value = AuthState.Loading
 
-        val result = authRepository.login(email, pass)
+        val result = authRepository.register(email, password)
+
+        if (!result.isSuccess) {
+            _authState.value = AuthState.Error(result.message ?: "Error registrando usuario")
+            return@launch
+        }
+
+        // Guardar perfil en Firestore
+        try {
+            val newUser = User(id = result.userId ?: "", email = email)
+            userRepository.createUser(newUser)
+        } catch (e: Exception) {
+            _authState.value = AuthState.Error("Usuario creado, pero falló guardar el perfil: ${e.message}")
+            return@launch
+        }
+
+        // Login automático después del registro
+        login(email, password)
+    }
+
+
+    // ---------------------------
+    //          LOGIN
+    // ---------------------------
+    fun login(email: String, password: String) = viewModelScope.launch {
+
+        _authState.value = AuthState.Loading
+
+        val result = authRepository.login(email, password)
 
         if (result.isSuccess) {
             _authState.value = AuthState.Success
         } else {
-            _authState.value = AuthState.Error(result.message ?: "Error en login")
-        }
-    }
-
-    fun register(email: String, pass: String) = viewModelScope.launch {
-        _authState.value = AuthState.Loading
-
-        val result = authRepository.register(email, pass)
-
-        if (result.isSuccess) {
-            _authState.value = AuthState.Success
-            login(email, pass)
-        } else {
-            _authState.value = AuthState.Error(result.message ?: "Error en registro")
+            _authState.value = AuthState.Error(result.message ?: "Error al iniciar sesión")
         }
     }
 
 
-    // -----------------------------------------------------
-    // SESIÓN
-    // -----------------------------------------------------
-    fun isLoggedIn(): Boolean = authRepository.isLoggedIn()
-
+    // ---------------------------
+    //          LOGOUT
+    // ---------------------------
     fun logout() {
         authRepository.logout()
         _authState.value = AuthState.Idle

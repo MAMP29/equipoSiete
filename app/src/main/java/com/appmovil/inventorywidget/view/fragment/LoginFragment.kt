@@ -40,13 +40,13 @@ class LoginFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupListeners()
-        observeAuthState()
+        observeViewModel()
 
-        // Quitar foco y teclado al tocar fuera
+        // Ocultar teclado
         binding.root.setOnClickListener {
+            hideKeyboard()
             binding.edtEmail.clearFocus()
             binding.edtPassword.clearFocus()
-            hideKeyboard()
         }
     }
 
@@ -57,42 +57,37 @@ class LoginFragment : Fragment() {
 
     private fun setupListeners() {
 
-        // EMAIL
+        // ⭐ EMAIL
         binding.edtEmail.doOnTextChanged { text, _, _, _ ->
             viewModel.onEmailChange(text.toString())
-            updateLoginButtonState()
         }
 
-        // PASSWORD (validación en tiempo real)
+        // ⭐ PASSWORD + VALIDACIÓN VISUAL
         binding.edtPassword.doOnTextChanged { text, _, _, _ ->
             val pwd = text.toString()
             viewModel.onPasswordChange(pwd)
 
             val isValid = pwd.length >= 6
 
-            // Mensaje error
-            binding.txtPasswordError.visibility = if (!isValid) View.VISIBLE else View.GONE
+            binding.txtPasswordError.visibility = if (isValid) View.GONE else View.VISIBLE
 
-            // Borde rojo o blanco
-            val color = if (isValid) R.color.white else android.R.color.holo_red_light
-            binding.inputPassword.boxStrokeColor = ContextCompat.getColor(requireContext(), color)
-
-            updateLoginButtonState()
+            val borderColor = if (isValid) R.color.white else android.R.color.holo_red_light
+            binding.inputPassword.boxStrokeColor =
+                ContextCompat.getColor(requireContext(), borderColor)
         }
 
-        // Fuerza teclado numérico
+        // ⭐ Teclado numérico
         binding.edtPassword.inputType = InputType.TYPE_CLASS_NUMBER
         binding.edtPassword.transformationMethod = PasswordTransformationMethod.getInstance()
 
-        // BOTÓN LOGIN
+        // ⭐ LOGIN
         binding.btnLogin.setOnClickListener {
-            viewModel.login(
-                email = binding.edtEmail.text.toString(),
-                pass = binding.edtPassword.text.toString()
-            )
+            val email = binding.edtEmail.text.toString()
+            val password = binding.edtPassword.text.toString()
+            viewModel.login(email, password)
         }
 
-        // BOTÓN REGISTRARSE
+        // ⭐ REGISTRO
         binding.btnGoRegister.setOnClickListener {
             val email = binding.edtEmail.text.toString()
             val pass = binding.edtPassword.text.toString()
@@ -105,76 +100,105 @@ class LoginFragment : Fragment() {
             viewModel.register(email, pass)
         }
 
-        // OJO VER CONTRASEÑA
+        // ⭐ Mostrar / Ocultar contraseña
         binding.inputPassword.setStartIconOnClickListener {
-
             viewModel.togglePasswordVisibility()
-            val visible = viewModel.passwordVisible.value
 
-            if (visible) {
-                binding.edtPassword.transformationMethod = null
-            } else {
-                binding.edtPassword.transformationMethod = PasswordTransformationMethod.getInstance()
+            lifecycleScope.launch {
+                val visible = viewModel.passwordVisible.value
+
+                binding.edtPassword.transformationMethod =
+                    if (visible) null else PasswordTransformationMethod.getInstance()
+
+                binding.edtPassword.setSelection(binding.edtPassword.text?.length ?: 0)
+
+                val iconRes = if (visible) R.drawable.ic_eye_open else R.drawable.ic_eye_close
+                binding.inputPassword.startIconDrawable =
+                    ContextCompat.getDrawable(requireContext(), iconRes)
             }
-
-            binding.edtPassword.setSelection(binding.edtPassword.text?.length ?: 0)
-
-            val iconRes = if (visible) R.drawable.ic_eye_open else R.drawable.ic_eye_close
-            binding.inputPassword.startIconDrawable = ContextCompat.getDrawable(requireContext(), iconRes)
         }
     }
 
-    // CAMBIOS DE COLORES SEGÚN ESTADO DE VALIDACIÓN
-    private fun updateLoginButtonState() {
-        val emailFilled = binding.edtEmail.text?.isNotEmpty() == true
-        val passwordValid = binding.edtPassword.text?.length ?: 0 >= 6
-        val canEnable = emailFilled && passwordValid
+    // -------------------------------
+    //   OBSERVAR STATEFLOW CORRECTO
+    // -------------------------------
+    private fun observeViewModel() {
 
-        // LOGIN
-        binding.btnLogin.isEnabled = canEnable
-        if (canEnable) {
-            binding.btnLogin.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.shinywhite))
-            binding.btnLogin.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.black))
-        } else {
-            binding.btnLogin.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.orange))
-            binding.btnLogin.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.white))
+        // ⭐ FORM VALIDATION
+        lifecycleScope.launch {
+            viewModel.isFormValid.collect { valid ->
+                updateButtonStates(valid)
+            }
         }
 
-        // REGISTRARSE
-        binding.btnGoRegister.isEnabled = canEnable
-        if (canEnable) {
-
-            binding.btnGoRegister.setTextColor(ContextCompat.getColor(requireContext(), R.color.shinywhite))
-        } else {
-            binding.btnGoRegister.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.darker_gray))
-        }
-    }
-
-    private fun observeAuthState() {
+        // ⭐ AUTH STATE
         lifecycleScope.launch {
             viewModel.authState.collect { state ->
-
                 when (state) {
-                    is AuthState.Loading -> {
+
+                    AuthState.Idle -> {
+                        binding.btnLogin.isEnabled = true
+                    }
+
+                    AuthState.Loading -> {
                         binding.btnLogin.isEnabled = false
                     }
 
-                    is AuthState.Error -> {
-                        Toast.makeText(requireContext(), "Login incorrecto", Toast.LENGTH_LONG).show()
-                    }
-
                     is AuthState.Success -> {
-                        findNavController().navigate(
-                            R.id.action_loginFragment_to_inventoryFragment
-                        )
+                        binding.btnLogin.isEnabled = true
+                        findNavController().navigate(R.id.action_loginFragment_to_inventoryFragment)
                     }
 
-                    else -> Unit
+                    is AuthState.Error -> {
+                        binding.btnLogin.isEnabled = true
+                        Toast.makeText(requireContext(), state.message, Toast.LENGTH_LONG).show()
+                    }
                 }
             }
         }
     }
+
+    // -------------------------------
+    //       ESTADOS DE BOTONES
+    // -------------------------------
+    private fun updateButtonStates(canEnable: Boolean) {
+
+        // LOGIN
+        binding.btnLogin.isEnabled = canEnable
+        if (canEnable) {
+            binding.btnLogin.setBackgroundColor(
+                ContextCompat.getColor(requireContext(), R.color.shinywhite)
+            )
+            binding.btnLogin.setTextColor(
+                ContextCompat.getColor(requireContext(), android.R.color.black)
+            )
+            binding.btnLogin.alpha = 1f
+        } else {
+            binding.btnLogin.setBackgroundColor(
+                ContextCompat.getColor(requireContext(), R.color.orange)
+            )
+            binding.btnLogin.setTextColor(
+                ContextCompat.getColor(requireContext(), android.R.color.white)
+            )
+            binding.btnLogin.alpha = 0.4f
+        }
+
+        // REGISTRO
+        binding.btnGoRegister.isEnabled = canEnable
+        binding.btnGoRegister.setTextColor(
+            ContextCompat.getColor(
+                requireContext(),
+                if (canEnable) R.color.shinywhite else android.R.color.darker_gray
+            )
+        )
+    }
 }
+
+
+
+
+
+
 
 
 

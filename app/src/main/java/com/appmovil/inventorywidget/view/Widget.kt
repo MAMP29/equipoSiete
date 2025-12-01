@@ -7,8 +7,10 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.widget.RemoteViews
+import androidx.core.content.edit
 import com.appmovil.inventorywidget.R
 import com.appmovil.inventorywidget.repository.ProductRepository
+import com.appmovil.inventorywidget.repository.SessionManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -17,7 +19,6 @@ import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Locale
 import javax.inject.Inject
-import androidx.core.content.edit
 
 private const val ACTION_TOGGLE_VISIBILITY = "com.appmovil.inventorywidget.ACTION_TOGGLE_VISIBILITY"
 
@@ -25,7 +26,10 @@ private const val ACTION_TOGGLE_VISIBILITY = "com.appmovil.inventorywidget.ACTIO
 class Widget : AppWidgetProvider() {
 
     @Inject
-    lateinit var repository: ProductRepository
+    lateinit var productRepository: ProductRepository
+
+    @Inject
+    lateinit var sessionManager: SessionManager
 
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
@@ -82,20 +86,29 @@ class Widget : AppWidgetProvider() {
         // --- Lógica de Datos y UI ---
         coroutineScope.launch {
             // Calculamos el saldo desde el repositorio
-            val productList = repository.getProductListDirectly()
             var totalBalance = 0.0
-            productList.forEach { product ->
-                totalBalance += product.price * product.quantity
+            val formatter = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("es-CO"))
+
+            if(sessionManager.isLoggedIn()) {
+                try {
+                    val productList = productRepository.getUserProductList()
+                    productList.forEach { product ->
+                        totalBalance += product.price * product.quantity
+                    }
+                } catch (e: Exception) {
+                    views.setTextViewText(R.id.tvBalanceStatus, "Error")
+                }
+            } else {
+                views.setTextViewText(R.id.tvBalanceStatus, "Inicia sesión")
             }
 
-            val formatter = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("es-CO"))
-            val formattedBalance = formatter.format(totalBalance)
+            val finalBalance = formatter.format(totalBalance)
 
             // Verificando el estado de visibilidad
             val isBalanceVisible = getVisibilityState(context)
 
             if (isBalanceVisible) {
-                views.setTextViewText(R.id.tvBalanceStatus, formattedBalance)
+                views.setTextViewText(R.id.tvBalanceStatus, finalBalance)
                 views.setImageViewResource(R.id.ibEye, R.drawable.outline_visibility_off_24)
             } else {
                 views.setTextViewText(R.id.tvBalanceStatus, "$ ****")

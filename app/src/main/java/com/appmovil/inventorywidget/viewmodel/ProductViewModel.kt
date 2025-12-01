@@ -1,7 +1,8 @@
 package com.appmovil.inventorywidget.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
@@ -13,45 +14,66 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ProductViewModel @Inject constructor(
-    private val repository: ProductRepository
+    private val productRepository: ProductRepository
 ) : ViewModel() {
 
     // Fuente del estado de la UI
-    private val _productsUiState = MediatorLiveData<ProductUiState>()
-
+    private val _productsUiState = MutableLiveData<ProductUiState>(ProductUiState.Loading)
     val productsUiState: LiveData<ProductUiState> = _productsUiState
 
-    val allProducts: LiveData<List<Product>> = repository.allProducts
-
     init {
-        _productsUiState.value = ProductUiState.Loading // Emitir estado de carga
+        loadProducts()
+    }
 
-        // Cuando tengamos todos los productos emitimos el estado de exito
-        _productsUiState.addSource(allProducts) { products ->
+    fun loadProducts() = viewModelScope.launch {
+        _productsUiState.value = ProductUiState.Loading
+        try {
+            val products = productRepository.getUserProductList()
+            Log.d("ProductViewModel", "Lista productos: \n $products")
             _productsUiState.value = ProductUiState.Success(products)
+        } catch (e: Exception) {
+            Log.e("ProductViewModel", "Error al cargar productos", e)
+            _productsUiState.value = ProductUiState.Error("No se pudieron cargar los productos: ${e.message}")
         }
     }
 
     fun getProductById(id: Int): LiveData<Product?> = liveData {
-        val product = repository.getById(id)
+        val product = productRepository.getProductById(id.toString())
         emit(product)
     }
 
     fun save(product: Product) = viewModelScope.launch {
-        repository.save(product)
+        try {
+            productRepository.saveProduct(product)
+            loadProducts()
+        } catch (e: Exception) {
+            Log.e("ProductViewModel", "Error al guardar el producto", e)
+            _productsUiState.value = ProductUiState.Error("Error al guardar el producto: ${e.message}")
+            loadProducts()
+        }
     }
 
-    fun delete(product: Product) {
-
+    fun delete(product: Product) = viewModelScope.launch {
         // Emitimos estado de carga al eliminar un producto
         _productsUiState.value = ProductUiState.Loading
-
-        viewModelScope.launch {
-            repository.delete(product)
+        try {
+            productRepository.deleteProduct(product.id)
+            loadProducts()
+        } catch (e: Exception) {
+            Log.e("ProductViewModel", "Error al eliminar producto", e)
+            _productsUiState.value = ProductUiState.Error("Error al eliminar el producto: ${e.message}")
+            loadProducts()
         }
     }
 
     fun update(product: Product) = viewModelScope.launch {
-        repository.update(product)
+        try {
+            productRepository.updateProduct(product)
+            loadProducts()
+        } catch (e: Exception) {
+            Log.e("ProductViewModel", "Error al actualizar producto", e)
+            _productsUiState.value = ProductUiState.Error("Error al actualizar el producto: ${e.message}")
+            loadProducts()
+        }
     }
 }
