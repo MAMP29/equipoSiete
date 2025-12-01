@@ -7,7 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
 import com.appmovil.inventorywidget.R
-import com.appmovil.inventorywidget.utils.SessionManager
+import com.appmovil.inventorywidget.repository.SessionManager
 import com.appmovil.inventorywidget.viewmodel.AuthState
 import com.appmovil.inventorywidget.viewmodel.AuthViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -16,6 +16,9 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
+
+    //@Inject
+    //lateinit var sessionManager: SessionManager
 
     @Inject
     lateinit var sessionManager: SessionManager
