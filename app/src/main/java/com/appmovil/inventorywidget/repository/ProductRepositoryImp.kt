@@ -23,8 +23,8 @@ class ProductRepositoryImp @Inject constructor(
                 return@suspendCoroutine
             }
             db.collection("users").document(uid)
-                .collection("products").document(product.id)
-                .set(product)
+                .collection("products")
+                .add(product)
                 .addOnSuccessListener {
                     Log.d("UserRepo", "Documento guardado exitosamente")
                     cont.resume(Unit)
@@ -120,10 +120,11 @@ class ProductRepositoryImp @Inject constructor(
                 .collection("products")
                 .get()
                 .addOnSuccessListener { doc ->
+                    Log.d("UserRepo", "Documentos de producto recuperados exitosamente")
                     cont.resume(doc.toObjects(Product::class.java))
                 }
                 .addOnFailureListener { e ->
-                    Log.w("UserRepo", "Error al guardar el documento", e)
+                    Log.w("UserRepo", "Error al cargar los documentos de producto", e)
                     cont.resume(emptyList())
                 }
         }

@@ -53,6 +53,11 @@ class InventoryFragment : Fragment() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        productViewModel.loadProducts()
+    }
+
     private fun setupRecyclerView() {
         productAdapter = ProductAdapter { selectedProduct ->
             val action = InventoryFragmentDirections
@@ -82,6 +87,10 @@ class InventoryFragment : Fragment() {
 
                     // Envía la lista de productos al adaptador
                     productAdapter.submitList(state.products)
+                }
+                is ProductUiState.Error -> {
+                    binding.progress.visibility = View.VISIBLE
+                    binding.recyclerview.visibility = View.GONE
                 }
             }
         }

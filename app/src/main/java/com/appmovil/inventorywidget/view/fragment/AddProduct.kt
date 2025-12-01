@@ -55,7 +55,7 @@ class AddProduct : Fragment() {
             findNavController().popBackStack()
         }
         setupListeners()
-        observeProducts()
+        //observeProducts()
     }
 
     // Limpiando la referencia del binding
@@ -113,11 +113,11 @@ class AddProduct : Fragment() {
         }
     }
 
-    private fun observeProducts() {
+/*    private fun observeProducts() {
         productViewModel.allProducts.observe(viewLifecycleOwner) { products ->
             Log.d("AddProduct", "Total de productos: ${products.size}")
         }
-    }
+    }*/
 
     private fun clearFields() {
         binding.etProductCode.text?.clear()

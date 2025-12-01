@@ -2,19 +2,13 @@ package com.appmovil.inventorywidget.viewmodel
 
 import android.util.Log
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
 import com.appmovil.inventorywidget.model.Product
 import com.appmovil.inventorywidget.repository.ProductRepository
-import com.appmovil.inventorywidget.repository.ProductRepositoryImp
-import com.appmovil.inventorywidget.repository.ProductRepositoryOld
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -35,6 +29,7 @@ class ProductViewModel @Inject constructor(
         _productsUiState.value = ProductUiState.Loading
         try {
             val products = productRepository.getUserProductList()
+            Log.d("ProductViewModel", "Lista productos: \n $products")
             _productsUiState.value = ProductUiState.Success(products)
         } catch (e: Exception) {
             Log.e("ProductViewModel", "Error al cargar productos", e)

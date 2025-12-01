@@ -7,8 +7,8 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.widget.RemoteViews
+import androidx.core.content.edit
 import com.appmovil.inventorywidget.R
-import com.appmovil.inventorywidget.repository.ProductRepositoryOld
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -16,16 +16,13 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Locale
-import javax.inject.Inject
-import androidx.core.content.edit
 
 private const val ACTION_TOGGLE_VISIBILITY = "com.appmovil.inventorywidget.ACTION_TOGGLE_VISIBILITY"
 
 @AndroidEntryPoint
 class Widget : AppWidgetProvider() {
 
-    @Inject
-    lateinit var repository: ProductRepositoryOld
+    //lateinit var repository: ProductRepositoryOld
 
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
@@ -82,11 +79,11 @@ class Widget : AppWidgetProvider() {
         // --- Lógica de Datos y UI ---
         coroutineScope.launch {
             // Calculamos el saldo desde el repositorio
-            val productList = repository.getProductListDirectly()
+            //val productList = repository.getProductListDirectly()
             var totalBalance = 0.0
-            productList.forEach { product ->
+/*            productList.forEach { product ->
                 totalBalance += product.price * product.quantity
-            }
+            }*/
 
             val formatter = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("es-CO"))
             val formattedBalance = formatter.format(totalBalance)

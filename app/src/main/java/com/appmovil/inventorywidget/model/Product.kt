@@ -1,7 +1,10 @@
 package com.appmovil.inventorywidget.model
 
+import android.os.Parcelable
 import com.google.firebase.firestore.DocumentId
+import kotlinx.parcelize.Parcelize
 
+@Parcelize
 data class Product(
     @DocumentId
     val id: String = "",
@@ -13,4 +16,4 @@ data class Product(
     val price: Int = 0,
 
     val quantity: Int = 0
-)
+) : Parcelable
