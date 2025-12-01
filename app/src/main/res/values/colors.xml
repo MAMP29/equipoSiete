@@ -7,4 +7,6 @@
     <color name="bg_red">#FF6647</color>
     <color name="dark_gunmetal">#1E282D</color>
     <color name="transparent">#00FFFFFF</color>
+    <color name="shinywhite">#F8F8FF</color>
+    <color name="orange">#FF9800</color>
 </resources>
