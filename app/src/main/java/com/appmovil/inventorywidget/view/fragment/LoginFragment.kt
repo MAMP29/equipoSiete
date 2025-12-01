@@ -151,8 +151,15 @@ class LoginFragment : Fragment() {
 
                     is AuthState.Error -> {
                         binding.btnLogin.isEnabled = true
-                        Toast.makeText(requireContext(), state.message, Toast.LENGTH_LONG).show()
+
+                        val message = if (state.isRegisterError)
+                            "Error en el registro"
+                        else
+                            "Login incorrecto"
+
+                        Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
                     }
+
                 }
             }
         }

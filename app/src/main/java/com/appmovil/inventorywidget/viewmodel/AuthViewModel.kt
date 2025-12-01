@@ -72,10 +72,20 @@ class AuthViewModel @Inject constructor(
 
         _authState.value = AuthState.Loading
 
-        val result = authRepository.register(email, password)
+        val result = try {
+            authRepository.register(email, password)
+        } catch (e: Exception) {
+            // En caso de excepción inesperada al llamar al repo
+            _authState.value = AuthState.Error("Error en el registro", isRegisterError = true)
+            return@launch
+        }
 
         if (!result.isSuccess) {
-            _authState.value = AuthState.Error(result.message ?: "Error registrando usuario")
+            // Marca explícitamente que es un error de registro
+            _authState.value = AuthState.Error(
+                message = result.message ?: "Error en el registro",
+                isRegisterError = true
+            )
             return@launch
         }
 
@@ -84,7 +94,10 @@ class AuthViewModel @Inject constructor(
             val newUser = User(id = result.userId ?: "", email = email)
             userRepository.createUser(newUser)
         } catch (e: Exception) {
-            _authState.value = AuthState.Error("Usuario creado, pero falló guardar el perfil: ${e.message}")
+            _authState.value = AuthState.Error(
+                message = "Usuario creado, pero falló guardar el perfil: ${e.message}",
+                isRegisterError = true
+            )
             return@launch
         }
 
@@ -100,12 +113,21 @@ class AuthViewModel @Inject constructor(
 
         _authState.value = AuthState.Loading
 
-        val result = authRepository.login(email, password)
+        val result = try {
+            authRepository.login(email, password)
+        } catch (e: Exception) {
+            // Error inesperado al llamar al repo
+            _authState.value = AuthState.Error("Login incorrecto", isRegisterError = false)
+            return@launch
+        }
 
         if (result.isSuccess) {
             _authState.value = AuthState.Success
         } else {
-            _authState.value = AuthState.Error(result.message ?: "Error al iniciar sesión")
+            _authState.value = AuthState.Error(
+                message = result.message ?: "Login incorrecto",
+                isRegisterError = false
+            )
         }
     }
 
@@ -118,3 +140,4 @@ class AuthViewModel @Inject constructor(
         _authState.value = AuthState.Idle
     }
 }
+
