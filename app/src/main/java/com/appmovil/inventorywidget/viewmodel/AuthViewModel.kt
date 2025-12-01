@@ -8,6 +8,7 @@ import com.appmovil.inventorywidget.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -27,6 +28,10 @@ class AuthViewModel @Inject constructor(
     // PASSWORD VISIBILITY
     private val _passwordVisible = MutableStateFlow(false)
     val passwordVisible: StateFlow<Boolean> = _passwordVisible
+
+    // PASSWORD INTERACTION OBSERVER
+    private val _isPasswordTouched = MutableStateFlow(false)
+    val isPasswordTouched: StateFlow<Boolean> = _isPasswordTouched.asStateFlow()
 
     // FORM VALIDATION
     private val _isFormValid = MutableStateFlow(false)
@@ -64,6 +69,14 @@ class AuthViewModel @Inject constructor(
         _passwordVisible.value = !_passwordVisible.value
     }
 
+    // ---------------------------
+    //   PASSWORD INTERACTION OBSERVER
+    // ---------------------------
+    fun markPasswordAsTouched() {
+        if (!_isPasswordTouched.value) {
+            _isPasswordTouched.value = true
+        }
+    }
 
     // ---------------------------
     //        REGISTER

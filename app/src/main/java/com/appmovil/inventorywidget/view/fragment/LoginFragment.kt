@@ -67,13 +67,11 @@ class LoginFragment : Fragment() {
             val pwd = text.toString()
             viewModel.onPasswordChange(pwd)
 
-            val isValid = pwd.length >= 6
+            if (pwd.isNotEmpty() && !viewModel.isPasswordTouched.value) {
+                viewModel.markPasswordAsTouched()
+            }
 
-            binding.txtPasswordError.visibility = if (isValid) View.GONE else View.VISIBLE
-
-            val borderColor = if (isValid) R.color.white else android.R.color.holo_red_light
-            binding.inputPassword.boxStrokeColor =
-                ContextCompat.getColor(requireContext(), borderColor)
+            validatePassword(pwd)
         }
 
         // ⭐ Teclado numérico
@@ -101,7 +99,7 @@ class LoginFragment : Fragment() {
         }
 
         // ⭐ Mostrar / Ocultar contraseña
-        binding.inputPassword.setStartIconOnClickListener {
+        binding.inputPassword.setEndIconOnClickListener {
             viewModel.togglePasswordVisibility()
 
             lifecycleScope.launch {
@@ -112,8 +110,8 @@ class LoginFragment : Fragment() {
 
                 binding.edtPassword.setSelection(binding.edtPassword.text?.length ?: 0)
 
-                val iconRes = if (visible) R.drawable.ic_eye_open else R.drawable.ic_eye_close
-                binding.inputPassword.startIconDrawable =
+                val iconRes = if (visible) R.drawable.outline_visibility_24 else R.drawable.outline_visibility_off_24
+                binding.inputPassword.endIconDrawable =
                     ContextCompat.getDrawable(requireContext(), iconRes)
             }
         }
@@ -173,19 +171,13 @@ class LoginFragment : Fragment() {
         // LOGIN
         binding.btnLogin.isEnabled = canEnable
         if (canEnable) {
-            binding.btnLogin.setBackgroundColor(
-                ContextCompat.getColor(requireContext(), R.color.shinywhite)
-            )
             binding.btnLogin.setTextColor(
-                ContextCompat.getColor(requireContext(), android.R.color.black)
+                ContextCompat.getColor(requireContext(), R.color.white)
             )
             binding.btnLogin.alpha = 1f
         } else {
-            binding.btnLogin.setBackgroundColor(
-                ContextCompat.getColor(requireContext(), R.color.orange)
-            )
             binding.btnLogin.setTextColor(
-                ContextCompat.getColor(requireContext(), android.R.color.white)
+                ContextCompat.getColor(requireContext(), R.color.gray)
             )
             binding.btnLogin.alpha = 0.4f
         }
@@ -198,6 +190,30 @@ class LoginFragment : Fragment() {
                 if (canEnable) R.color.shinywhite else android.R.color.darker_gray
             )
         )
+    }
+
+    private fun validatePassword(pwd: String) {
+        val isTouched = viewModel.isPasswordTouched.value
+
+        val isValid = pwd.length >= 6
+
+        val shouldShowError = !isValid && isTouched
+
+        binding.txtPasswordError.visibility = if (shouldShowError) View.VISIBLE else View.GONE
+
+        val borderColor = if (isValid) R.color.white else android.R.color.holo_red_light
+        binding.inputPassword.boxStrokeColor =
+            ContextCompat.getColor(requireContext(), borderColor)
+        binding.inputPassword.hintTextColor =
+            ContextCompat.getColorStateList(requireContext(), borderColor)
+//        val alertIcon = when {
+//            isValid && viewModel.passwordVisible.value -> R.drawable.outline_visibility_24
+//            isValid && !viewModel.passwordVisible.value -> R.drawable.outline_visibility_off_24
+//            shouldShowError -> R.drawable.exclamation_24dp
+//            else -> {R.drawable.outline_visibility_24}
+//        }
+//        binding.inputPassword.endIconDrawable =
+//            ContextCompat.getDrawable(requireContext(), alertIcon)
     }
 }
 
