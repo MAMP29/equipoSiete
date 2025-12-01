@@ -2,8 +2,9 @@ package com.appmovil.inventorywidget.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.appmovil.inventorywidget.model.AuthResult
+import com.appmovil.inventorywidget.model.User
 import com.appmovil.inventorywidget.repository.AuthRepository
+import com.appmovil.inventorywidget.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,7 +13,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
     private val _authState = MutableStateFlow<AuthState>(AuthState.Idle)
@@ -25,11 +27,16 @@ class AuthViewModel @Inject constructor(
         val authResult = authRepository.register(email, password)
 
         if (authResult.isSuccess) {
-            // TODO: Guardar usuario en la DB
-            _authState.value = AuthState.Success
-            login(email, password)
+            try {
+                val newUser = User(id = authResult.userId.toString(), email = email)
+                userRepository.createUser(newUser)
+                _authState.value = AuthState.Success
+                login(email, password)
+            } catch (e: Exception) {
+                _authState.value = AuthState.Error(authResult.message?.toString() ?: "El usuario se creó, pero no se pudo guardar el perfil: ${e.message}")
+            }
         } else {
-            _authState.value = AuthState.Error(authResult.message?.toString() ?: "Error")
+            _authState.value = AuthState.Error(authResult.message?.toString() ?: "Error desconocido en el registro")
         }
     }
 
@@ -45,9 +52,6 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun isLoggedIn(): Boolean {
-        return authRepository.isLoggedIn()
-    }
 
     fun logout() = viewModelScope.launch {
         _authState.value = AuthState.Idle
