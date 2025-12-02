@@ -1,6 +1,7 @@
 
 package com.appmovil.inventorywidget.repository
 
+import com.appmovil.inventorywidget.utils.SessionManager
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
@@ -15,22 +16,19 @@ import org.mockito.Mockito.`when`
 class ProductRepositoryImpTest {
 
     private lateinit var firestore: FirebaseFirestore
-    private lateinit var firebaseAuth: FirebaseAuth
-    private lateinit var firebaseUser: FirebaseUser
+    private lateinit var sessionManager: SessionManager
     private lateinit var productRepository: ProductRepositoryImp
 
     @Before
     fun setup() {
         firestore = mock(FirebaseFirestore::class.java)
-        firebaseAuth = mock(FirebaseAuth::class.java)
-        firebaseUser = mock(FirebaseUser::class.java)
-        productRepository = ProductRepositoryImp(firestore, firebaseAuth)
+        sessionManager = mock(SessionManager::class.java)
+        productRepository = ProductRepositoryImp(firestore, sessionManager)
     }
 
     @Test
     fun `getUserProductList when user is not authenticated throws exception`() = runTest {
-        // Arrange
-        `when`(firebaseAuth.currentUser).thenReturn(null)
+        `when`(sessionManager.currentUser()).thenReturn(null)
 
         // Act & Assert
         try {
@@ -39,23 +37,5 @@ class ProductRepositoryImpTest {
         } catch (e: Exception) {
             assert(e.message == "No hay un usuario autenticado para realizar esta operación.")
         }
-    }
-
-    @Test
-    fun `getUserProductList when user is authenticated returns products`() = runTest {
-        // This test is more complex and would require mocking the entire Firestore call chain.
-        // This is just a basic structure to show how to mock the authenticated user.
-        // Arrange
-        val userId = "test-user-id"
-        `when`(firebaseAuth.currentUser).thenReturn(firebaseUser)
-        `when`(firebaseUser.uid).thenReturn(userId)
-
-        // Further arrangement of Firestore mocks would be needed here...
-
-        // Act
-        // val products = productRepository.getUserProductList()
-
-        // Assert
-        // ...
     }
 }

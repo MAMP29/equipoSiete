@@ -22,22 +22,6 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 class AppModule {
 
-//    @Provides
-//    @Singleton
-//    fun provideInventoryDatabase(
-//        @ApplicationContext app: Context
-//    ) = Room.databaseBuilder(
-//        app,
-//        InventoryDatabase::class.java,
-//        "inventario_database"
-//    ).build()
-//
-//    @Provides
-//    @Singleton
-//    fun provideProductDao(db: InventoryDatabase): ProductDao {
-//        return db.productDao()
-//    }
-
     @Provides
     @Singleton
     fun provideAuthRepository(auth: FirebaseAuth): AuthRepository {
@@ -47,7 +31,7 @@ class AppModule {
     @Provides
     @Singleton
     fun provideProductRepository(db: FirebaseFirestore, firebaseAuthSessionManager: SessionManager): ProductRepository {
-        return ProductRepositoryImp(db, firebaseAuthSessionManager as FirebaseAuth)
+        return ProductRepositoryImp(db, firebaseAuthSessionManager)
     }
 
     @Provides
