@@ -1,4 +1,4 @@
-package com.appmovil.inventorywidget.repository
+package com.appmovil.inventorywidget.utils
 
 import android.util.Log
 import com.appmovil.inventorywidget.model.User

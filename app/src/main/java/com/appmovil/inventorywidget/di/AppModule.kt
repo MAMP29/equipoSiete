@@ -2,10 +2,10 @@ package com.appmovil.inventorywidget.di
 
 import com.appmovil.inventorywidget.repository.AuthRepository
 import com.appmovil.inventorywidget.repository.AuthRepositoryImp
-import com.appmovil.inventorywidget.repository.FirebaseAuthSessionManager
+import com.appmovil.inventorywidget.utils.FirebaseAuthSessionManager
 import com.appmovil.inventorywidget.repository.ProductRepository
 import com.appmovil.inventorywidget.repository.ProductRepositoryImp
-import com.appmovil.inventorywidget.repository.SessionManager
+import com.appmovil.inventorywidget.utils.SessionManager
 import com.appmovil.inventorywidget.repository.UserRepository
 import com.appmovil.inventorywidget.repository.UserRepositoryImp
 import com.google.firebase.Firebase

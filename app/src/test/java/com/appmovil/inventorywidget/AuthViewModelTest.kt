@@ -2,6 +2,7 @@ package com.appmovil.inventorywidget
 
 import com.appmovil.inventorywidget.model.AuthResult
 import com.appmovil.inventorywidget.repository.AuthRepository
+import com.appmovil.inventorywidget.repository.UserRepository
 import com.appmovil.inventorywidget.viewmodel.AuthState
 import com.appmovil.inventorywidget.viewmodel.AuthViewModel
 import kotlinx.coroutines.Dispatchers
@@ -20,6 +21,7 @@ import org.mockito.Mockito
 class AuthViewModelTest {
 
     private lateinit var authRepository: AuthRepository
+    private lateinit var userRepository: UserRepository
     private lateinit var authViewModel: AuthViewModel
 
     private val testDispatcher = UnconfinedTestDispatcher()
@@ -28,7 +30,8 @@ class AuthViewModelTest {
     fun setup() {
         Dispatchers.setMain(testDispatcher)
         authRepository = Mockito.mock(AuthRepository::class.java)
-        authViewModel = AuthViewModel(authRepository)
+        userRepository = Mockito.mock(UserRepository::class.java)
+        authViewModel = AuthViewModel(authRepository, userRepository)
     }
 
     @After
