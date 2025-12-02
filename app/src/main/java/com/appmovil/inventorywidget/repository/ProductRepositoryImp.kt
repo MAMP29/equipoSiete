@@ -2,6 +2,7 @@ package com.appmovil.inventorywidget.repository
 
 import android.util.Log
 import com.appmovil.inventorywidget.model.Product
+import com.appmovil.inventorywidget.utils.SessionManager
 import com.google.firebase.firestore.FirebaseFirestore
 import javax.inject.Inject
 import javax.inject.Singleton

@@ -10,7 +10,7 @@ import android.widget.RemoteViews
 import androidx.core.content.edit
 import com.appmovil.inventorywidget.R
 import com.appmovil.inventorywidget.repository.ProductRepository
-import com.appmovil.inventorywidget.repository.SessionManager
+import com.appmovil.inventorywidget.utils.SessionManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

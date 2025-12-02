@@ -74,11 +74,6 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore")
     implementation(libs.kotlinx.coroutines.play.services)
 
-    // Room
-    implementation(libs.androidx.room.runtime)
-    implementation(libs.androidx.room.ktx)
-    ksp(libs.androidx.room.compiler)
-
     // Mockito y testing con corrutinas
     testImplementation(libs.mockito.core)
     testImplementation(libs.kotlinx.coroutines.test)
@@ -90,13 +85,5 @@ dependencies {
     // Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
-
-    // Lotti
-    implementation("com.airbnb.android:lottie:6.4.0")
-
-    // Biometric
-    implementation("androidx.biometric:biometric:1.2.0-alpha05")
-
-    implementation("com.google.android.material:material:1.12.0")
 
 }
