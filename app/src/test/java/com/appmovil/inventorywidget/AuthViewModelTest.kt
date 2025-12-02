@@ -1,6 +1,7 @@
 package com.appmovil.inventorywidget
 
 import com.appmovil.inventorywidget.model.AuthResult
+import com.appmovil.inventorywidget.model.User
 import com.appmovil.inventorywidget.repository.AuthRepository
 import com.appmovil.inventorywidget.repository.UserRepository
 import com.appmovil.inventorywidget.viewmodel.AuthState
@@ -39,8 +40,31 @@ class AuthViewModelTest {
         Dispatchers.resetMain()
     }
 
+
+    // Pruebas, validacion de formulario
     @Test
-    fun loginUser_updateStateFlowToLoading_assertEmitSuccess() = runTest {
+    fun `dado un email y contraseña válidos, isFormValid debe ser true`() {
+        authViewModel.onEmailChange("test@example.com")
+        authViewModel.onPasswordChange("123456")
+        assertTrue(authViewModel.isFormValid.value)
+    }
+
+    @Test
+    fun `dada una contraseña inválida, isFormValid debe ser false`() {
+        authViewModel.onEmailChange("test@example.com")
+        authViewModel.onPasswordChange("123")
+        assertFalse(authViewModel.isFormValid.value)
+    }
+
+    @Test
+    fun `dado un email inválido, isFormValid debe ser false`() {
+        authViewModel.onEmailChange("")
+        authViewModel.onPasswordChange("123456")
+        assertFalse(authViewModel.isFormValid.value)
+    }
+
+    @Test
+    fun `dado un login exitoso, el estado debe terminar en Success`() = runTest {
         val email = "test@test.com"
         val password = "123456"
 
@@ -53,16 +77,12 @@ class AuthViewModelTest {
 
         authViewModel.login(email, password)
 
-        val currentState = authViewModel.authState.value
-
-        assertTrue(currentState is AuthState.Success)
-
-        // Verificamos que se llamó al repositorio
+        assertTrue(authViewModel.authState.value is AuthState.Success)
         Mockito.verify(authRepository).login(email, password)
     }
 
     @Test
-    fun loginUserFail_updatesStateFlowToError_assertFailure() = runTest {
+    fun `dado un login fallido, el estado debe terminar en Error`() = runTest {
         val email = "error@example.com"
         val password = "bad"
         val errorMsg = "Usuario no encontrado"
@@ -73,14 +93,13 @@ class AuthViewModelTest {
         authViewModel.login(email, password)
 
         val currentState = authViewModel.authState.value
-
-        // Verificamos tipo de error y mensaje
         assertTrue(currentState is AuthState.Error)
         assertEquals(errorMsg, (currentState as AuthState.Error).message)
+        assertFalse(currentState.isRegisterError)
     }
 
     @Test
-    fun loginUser_thenLogout_thenCheckAuthStateToIdle_assertIdle() = runTest {
+    fun `al llamar a logout despues de un login, el estado debe volver a Idle`() = runTest {
         val email = "test@test.com"
         val password = "123456"
 
@@ -99,71 +118,57 @@ class AuthViewModelTest {
     }
 
     @Test
-    fun registerUser_thenFail_thenAssertAuthError() = runTest {
-        val email = "testr@example.com"
-        val password = "contra"
-        val errorMsg = "Contraseña no valida"
+    fun `dado un registro fallido en Auth, el estado debe ser Error y no se debe crear el usuario`() = runTest {
+        val email = "test@test.com"
+        val password = "123456"
+        val errorMsg = "El email ya está en uso"
 
+        // Arrange
         Mockito.`when`(authRepository.register(email, password))
             .thenReturn(AuthResult(isSuccess = false, message = errorMsg))
 
+        // Act
         authViewModel.register(email, password)
 
+        // Assert
         val currentState = authViewModel.authState.value
-
-        // Verificamos tipo de error y mensaje
         assertTrue(currentState is AuthState.Error)
         assertEquals(errorMsg, (currentState as AuthState.Error).message)
+        assertTrue(currentState.isRegisterError) // Verificamos el flag
+
+        // Verificamos que nunca se interactuó con el userRepository
+        Mockito.verify(userRepository, Mockito.never()).createUser(any(User::class.java))
+        // Verificamos que nunca se intentó hacer login
+        Mockito.verify(authRepository, Mockito.never()).login(email, password)
     }
 
     @Test
-    fun registerUser_thenAssertIfLoginWasCalled() = runTest {
+    fun `dado un registro exitoso pero fallo al crear usuario en Firestore, el estado debe ser Error`() = runTest {
         val email = "test@test.com"
         val password = "123456"
+        val userId = "user-id-123"
+        val firestoreError = RuntimeException("Permiso denegado en Firestore")
 
+        // Arrange
         Mockito.`when`(authRepository.register(email, password))
-            .thenReturn(AuthResult(isSuccess = true))
+            .thenReturn(AuthResult(isSuccess = true, userId = userId))
+        // Simulamos que createUser lanza una excepción
+        Mockito.`when`(userRepository.createUser(any(User::class.java)))
+            .thenThrow(firestoreError)
 
-        Mockito.`when`(authRepository.login(email, password))
-            .thenReturn(AuthResult(isSuccess = true))
-
-        // Verificando estado inicial
-        assertTrue(authViewModel.authState.value is AuthState.Idle)
-
+        // Act
         authViewModel.register(email, password)
 
+        // Assert
         val currentState = authViewModel.authState.value
-
-        assertTrue(currentState is AuthState.Success)
-
-        // Verificamos que se llamó el login en el repositorio
-        Mockito.verify(authRepository).login(email, password)
-    }
-
-    @Test
-    fun registerSuccess_loginFails_shouldEndWithErrorState() = runTest {
-        val email = "test@test.com"
-        val password = "123456"
-        val loginErrorMessage = "Credenciales de sesión no válidas después del registro."
-
-        // Configura el registro para que simule ser exitoso
-        Mockito.`when`(authRepository.register(email, password))
-            .thenReturn(AuthResult(isSuccess = true, message = null))
-
-        // Configura el registro para que simule fallar
-        Mockito.`when`(authRepository.login(email, password))
-            .thenReturn(AuthResult(isSuccess = false, message = loginErrorMessage))
-
-        assertTrue(authViewModel.authState.value is AuthState.Idle)
-
-        authViewModel.register(email, password)
-
-        Mockito.verify(authRepository).login(email, password)
-
-        val currentState = authViewModel.authState.value
-
         assertTrue(currentState is AuthState.Error)
+        assertTrue((currentState as AuthState.Error).message.contains("falló guardar el perfil"))
 
-        assertEquals(loginErrorMessage, (currentState as AuthState.Error).message)
+        // Verificamos que se intentó crear el usuario
+        Mockito.verify(userRepository).createUser(any(User::class.java))
+        // Verificamos que nunca se intentó hacer login porque el flujo se interrumpió
+        Mockito.verify(authRepository, Mockito.never()).login(email, password)
     }
+
+    private fun <T> any(type: Class<T>): T = Mockito.any(type)
 }
