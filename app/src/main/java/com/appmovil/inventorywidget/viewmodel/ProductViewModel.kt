@@ -1,6 +1,5 @@
 package com.appmovil.inventorywidget.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -29,10 +28,8 @@ class ProductViewModel @Inject constructor(
         _productsUiState.value = ProductUiState.Loading
         try {
             val products = productRepository.getUserProductList()
-            Log.d("ProductViewModel", "Lista productos: \n $products")
             _productsUiState.value = ProductUiState.Success(products)
         } catch (e: Exception) {
-            Log.e("ProductViewModel", "Error al cargar productos", e)
             _productsUiState.value = ProductUiState.Error("No se pudieron cargar los productos: ${e.message}")
         }
     }
@@ -47,7 +44,6 @@ class ProductViewModel @Inject constructor(
             productRepository.saveProduct(product)
             loadProducts()
         } catch (e: Exception) {
-            Log.e("ProductViewModel", "Error al guardar el producto", e)
             _productsUiState.value = ProductUiState.Error("Error al guardar el producto: ${e.message}")
             loadProducts()
         }
@@ -60,7 +56,6 @@ class ProductViewModel @Inject constructor(
             productRepository.deleteProduct(product.id)
             loadProducts()
         } catch (e: Exception) {
-            Log.e("ProductViewModel", "Error al eliminar producto", e)
             _productsUiState.value = ProductUiState.Error("Error al eliminar el producto: ${e.message}")
             loadProducts()
         }
@@ -71,7 +66,6 @@ class ProductViewModel @Inject constructor(
             productRepository.updateProduct(product)
             loadProducts()
         } catch (e: Exception) {
-            Log.e("ProductViewModel", "Error al actualizar producto", e)
             _productsUiState.value = ProductUiState.Error("Error al actualizar el producto: ${e.message}")
             loadProducts()
         }

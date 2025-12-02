@@ -47,7 +47,7 @@ class AppModule {
     @Provides
     @Singleton
     fun provideProductRepository(db: FirebaseFirestore, firebaseAuthSessionManager: SessionManager): ProductRepository {
-        return ProductRepositoryImp(db, firebaseAuthSessionManager)
+        return ProductRepositoryImp(db, firebaseAuthSessionManager as FirebaseAuth)
     }
 
     @Provides

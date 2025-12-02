@@ -86,4 +86,6 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
 
+    //Test
+    testImplementation(libs.androidx.arch.core.testing)
 }
