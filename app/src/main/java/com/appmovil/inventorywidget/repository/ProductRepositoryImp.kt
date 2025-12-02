@@ -2,6 +2,7 @@ package com.appmovil.inventorywidget.repository
 
 import android.util.Log
 import com.appmovil.inventorywidget.model.Product
+import com.appmovil.inventorywidget.utils.SessionManager
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import javax.inject.Inject
@@ -13,11 +14,11 @@ import kotlin.coroutines.suspendCoroutine
 @Singleton
 class ProductRepositoryImp @Inject constructor(
     private val db: FirebaseFirestore,
-    private val auth: FirebaseAuth
+    private val auth: SessionManager
 ) : ProductRepository {
 
     private fun getUserId(): String {
-        return auth.currentUser?.uid ?: throw Exception("No hay un usuario autenticado para realizar esta operación.")
+        return auth.currentUser()?.id ?: throw Exception("No hay un usuario autenticado para realizar esta operación.")
     }
 
     override suspend fun saveProduct(product: Product): Unit =
