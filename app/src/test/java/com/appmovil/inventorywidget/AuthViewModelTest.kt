@@ -39,6 +39,29 @@ class AuthViewModelTest {
         Dispatchers.resetMain()
     }
 
+
+    // Pruebas, validacion de formulario
+    @Test
+    fun `dado un email y contraseña válidos, isFormValid debe ser true`() {
+        authViewModel.onEmailChange("test@example.com")
+        authViewModel.onPasswordChange("123456")
+        assertTrue(authViewModel.isFormValid.value)
+    }
+
+    @Test
+    fun `dada una contraseña inválida, isFormValid debe ser false`() {
+        authViewModel.onEmailChange("test@example.com")
+        authViewModel.onPasswordChange("123")
+        assertFalse(authViewModel.isFormValid.value)
+    }
+
+    @Test
+    fun `dado un email inválido, isFormValid debe ser false`() {
+        authViewModel.onEmailChange("")
+        authViewModel.onPasswordChange("123456")
+        assertFalse(authViewModel.isFormValid.value)
+    }
+
     @Test
     fun loginUser_updateStateFlowToLoading_assertEmitSuccess() = runTest {
         val email = "test@test.com"
