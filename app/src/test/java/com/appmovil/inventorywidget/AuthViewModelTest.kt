@@ -117,71 +117,55 @@ class AuthViewModelTest {
     }
 
     @Test
-    fun registerUser_thenFail_thenAssertAuthError() = runTest {
-        val email = "testr@example.com"
-        val password = "contra"
-        val errorMsg = "Contraseña no valida"
+    fun `dado un registro fallido en Auth, el estado debe ser Error y no se debe crear el usuario`() = runTest {
+        val email = "test@test.com"
+        val password = "123456"
+        val errorMsg = "El email ya está en uso"
 
+        // Arrange
         Mockito.`when`(authRepository.register(email, password))
             .thenReturn(AuthResult(isSuccess = false, message = errorMsg))
 
+        // Act
         authViewModel.register(email, password)
 
+        // Assert
         val currentState = authViewModel.authState.value
-
-        // Verificamos tipo de error y mensaje
         assertTrue(currentState is AuthState.Error)
         assertEquals(errorMsg, (currentState as AuthState.Error).message)
+        assertTrue(currentState.isRegisterError) // Verificamos el flag
+
+        // Verificamos que nunca se interactuó con el userRepository
+        Mockito.verify(userRepository, Mockito.never()).createUser(any(User::class.java))
+        // Verificamos que nunca se intentó hacer login
+        Mockito.verify(authRepository, Mockito.never()).login(email, password)
     }
 
     @Test
-    fun registerUser_thenAssertIfLoginWasCalled() = runTest {
+    fun `dado un registro exitoso pero fallo al crear usuario en Firestore, el estado debe ser Error`() = runTest {
         val email = "test@test.com"
         val password = "123456"
+        val userId = "user-id-123"
+        val firestoreError = RuntimeException("Permiso denegado en Firestore")
 
+        // Arrange
         Mockito.`when`(authRepository.register(email, password))
-            .thenReturn(AuthResult(isSuccess = true))
+            .thenReturn(AuthResult(isSuccess = true, userId = userId))
+        // Simulamos que createUser lanza una excepción
+        Mockito.`when`(userRepository.createUser(any(User::class.java)))
+            .thenThrow(firestoreError)
 
-        Mockito.`when`(authRepository.login(email, password))
-            .thenReturn(AuthResult(isSuccess = true))
-
-        // Verificando estado inicial
-        assertTrue(authViewModel.authState.value is AuthState.Idle)
-
+        // Act
         authViewModel.register(email, password)
 
+        // Assert
         val currentState = authViewModel.authState.value
-
-        assertTrue(currentState is AuthState.Success)
-
-        // Verificamos que se llamó el login en el repositorio
-        Mockito.verify(authRepository).login(email, password)
-    }
-
-    @Test
-    fun registerSuccess_loginFails_shouldEndWithErrorState() = runTest {
-        val email = "test@test.com"
-        val password = "123456"
-        val loginErrorMessage = "Credenciales de sesión no válidas después del registro."
-
-        // Configura el registro para que simule ser exitoso
-        Mockito.`when`(authRepository.register(email, password))
-            .thenReturn(AuthResult(isSuccess = true, message = null))
-
-        // Configura el registro para que simule fallar
-        Mockito.`when`(authRepository.login(email, password))
-            .thenReturn(AuthResult(isSuccess = false, message = loginErrorMessage))
-
-        assertTrue(authViewModel.authState.value is AuthState.Idle)
-
-        authViewModel.register(email, password)
-
-        Mockito.verify(authRepository).login(email, password)
-
-        val currentState = authViewModel.authState.value
-
         assertTrue(currentState is AuthState.Error)
+        assertTrue((currentState as AuthState.Error).message.contains("falló guardar el perfil"))
 
-        assertEquals(loginErrorMessage, (currentState as AuthState.Error).message)
+        // Verificamos que se intentó crear el usuario
+        Mockito.verify(userRepository).createUser(any(User::class.java))
+        // Verificamos que nunca se intentó hacer login porque el flujo se interrumpió
+        Mockito.verify(authRepository, Mockito.never()).login(email, password)
     }
 }
