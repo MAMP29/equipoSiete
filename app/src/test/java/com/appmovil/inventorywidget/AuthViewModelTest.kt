@@ -63,7 +63,7 @@ class AuthViewModelTest {
     }
 
     @Test
-    fun loginUser_updateStateFlowToLoading_assertEmitSuccess() = runTest {
+    fun `dado un login exitoso, el estado debe terminar en Success`() = runTest {
         val email = "test@test.com"
         val password = "123456"
 
@@ -76,16 +76,12 @@ class AuthViewModelTest {
 
         authViewModel.login(email, password)
 
-        val currentState = authViewModel.authState.value
-
-        assertTrue(currentState is AuthState.Success)
-
-        // Verificamos que se llamó al repositorio
+        assertTrue(authViewModel.authState.value is AuthState.Success)
         Mockito.verify(authRepository).login(email, password)
     }
 
     @Test
-    fun loginUserFail_updatesStateFlowToError_assertFailure() = runTest {
+    fun `dado un login fallido, el estado debe terminar en Error`() = runTest {
         val email = "error@example.com"
         val password = "bad"
         val errorMsg = "Usuario no encontrado"
@@ -96,14 +92,13 @@ class AuthViewModelTest {
         authViewModel.login(email, password)
 
         val currentState = authViewModel.authState.value
-
-        // Verificamos tipo de error y mensaje
         assertTrue(currentState is AuthState.Error)
         assertEquals(errorMsg, (currentState as AuthState.Error).message)
+        assertFalse(currentState.isRegisterError)
     }
 
     @Test
-    fun loginUser_thenLogout_thenCheckAuthStateToIdle_assertIdle() = runTest {
+    fun `al llamar a logout despues de un login, el estado debe volver a Idle`() = runTest {
         val email = "test@test.com"
         val password = "123456"
 
