@@ -1,6 +1,7 @@
 package com.appmovil.inventorywidget
 
 import com.appmovil.inventorywidget.model.AuthResult
+import com.appmovil.inventorywidget.model.User
 import com.appmovil.inventorywidget.repository.AuthRepository
 import com.appmovil.inventorywidget.repository.UserRepository
 import com.appmovil.inventorywidget.viewmodel.AuthState
@@ -168,4 +169,6 @@ class AuthViewModelTest {
         // Verificamos que nunca se intentó hacer login porque el flujo se interrumpió
         Mockito.verify(authRepository, Mockito.never()).login(email, password)
     }
+
+    private fun <T> any(type: Class<T>): T = Mockito.any(type)
 }
