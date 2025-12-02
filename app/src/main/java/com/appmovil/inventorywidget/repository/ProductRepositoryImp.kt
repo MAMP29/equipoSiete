@@ -2,7 +2,7 @@ package com.appmovil.inventorywidget.repository
 
 import android.util.Log
 import com.appmovil.inventorywidget.model.Product
-import com.appmovil.inventorywidget.utils.SessionManager
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -13,16 +13,16 @@ import kotlin.coroutines.suspendCoroutine
 @Singleton
 class ProductRepositoryImp @Inject constructor(
     private val db: FirebaseFirestore,
-    private val sessionManager: SessionManager
+    private val auth: FirebaseAuth
 ) : ProductRepository {
+
+    private fun getUserId(): String {
+        return auth.currentUser?.uid ?: throw Exception("No hay un usuario autenticado para realizar esta operación.")
+    }
 
     override suspend fun saveProduct(product: Product): Unit =
         suspendCoroutine { cont ->
-            val uid = sessionManager.currentUser()?.id.toString()
-            if (uid == null) {
-                cont.resumeWithException(Exception("No hay un usuario autenticado para realizar esta operación."))
-                return@suspendCoroutine
-            }
+            val uid = getUserId()
             db.collection("users").document(uid)
                 .collection("products")
                 .add(product)
@@ -39,11 +39,7 @@ class ProductRepositoryImp @Inject constructor(
 
     override suspend fun deleteProduct(productId: String): Unit =
         suspendCoroutine { cont ->
-            val uid = sessionManager.currentUser()?.id.toString()
-            if (uid == null) {
-                cont.resumeWithException(Exception("No hay un usuario autenticado para realizar esta operación."))
-                return@suspendCoroutine
-            }
+            val uid = getUserId()
             db.collection("users").document(uid)
                 .collection("products").document(productId)
                 .delete()
@@ -60,11 +56,7 @@ class ProductRepositoryImp @Inject constructor(
 
     override suspend fun updateProduct(product: Product): Unit =
         suspendCoroutine { cont ->
-            val uid = sessionManager.currentUser()?.id.toString()
-            if (uid == null) {
-                cont.resumeWithException(Exception("No hay un usuario autenticado para realizar esta operación."))
-                return@suspendCoroutine
-            }
+            val uid = getUserId()
             db.collection("users")
                 .document(uid)
                 .collection("products")
@@ -89,11 +81,7 @@ class ProductRepositoryImp @Inject constructor(
 
     override suspend fun getProductById(productId: String): Product? =
         suspendCoroutine { cont ->
-            val uid = sessionManager.currentUser()?.id.toString()
-            if (uid == null) {
-                cont.resumeWithException(Exception("No hay un usuario autenticado para realizar esta operación."))
-                return@suspendCoroutine
-            }
+            val uid = getUserId()
             db.collection("users").document(uid)
                 .collection("products").document(productId)
                 .get()
@@ -112,11 +100,7 @@ class ProductRepositoryImp @Inject constructor(
 
     override suspend fun getUserProductList(): List<Product> =
         suspendCoroutine { cont ->
-            val uid = sessionManager.currentUser()?.id.toString()
-            if (uid == null) {
-                cont.resumeWithException(Exception("No hay un usuario autenticado para realizar esta operación."))
-                return@suspendCoroutine
-            }
+            val uid = getUserId()
             db.collection("users").document(uid)
                 .collection("products")
                 .get()
